@@ -1,2 +1,11 @@
 *.class
 *.log
+target/
+.idea/
+.metals/
+.bloop
+.DS_Store
+release-temp/
+.bsp/
+.vscode
+metals.sbt

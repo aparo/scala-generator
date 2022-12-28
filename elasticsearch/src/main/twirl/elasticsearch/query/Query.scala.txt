@@ -1,0 +1,32 @@
+@(qf: generator.elasticsearch.klass.query.QueryClassDef)/* Copyright 2017 - Wimobilize Pte Ltd.  All Rights Reserved. */
+package zio.elasticsearch.queries
+
+@(qf.scalaExtraImports)
+import zio.elasticsearch.search._
+import zio.json._
+import com.github.plokhotnyuk.jsoniter_scala.core._
+import com.github.plokhotnyuk.jsoniter_scala.macros._
+
+case class @(qf.className)(@qf.scalaClassSignature
+           @(" "*qf.className.get.length)) extends Query {
+
+    val filterName = @(qf.className).NAME
+
+    def toInnerJson = {
+@(qf.innerJsonScala)
+    }
+@(qf.extraCaseClassScala)
+}
+
+object @(qf.className) extends QueryType[@(qf.className)] {
+
+    val NAME="@(qf.name)"
+
+    def fromInnerJson(json: Json):@(qf.className) = {
+@(qf.readJsonVarScala)
+        new @(qf.className)(
+@(qf.readJsonScala)
+        )
+    }
+@(qf.extraObjectScala)
+}

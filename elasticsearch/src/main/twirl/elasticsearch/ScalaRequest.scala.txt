@@ -1,0 +1,12 @@
+@(namespace:String, importList: List[String], request:String)
+package @{namespace}.client
+
+import zio.json._
+import com.github.plokhotnyuk.jsoniter_scala.core._
+import com.github.plokhotnyuk.jsoniter_scala.macros._
+import scala.collection.mutable
+
+@for(action <- importList) {import @action
+}
+
+@request
