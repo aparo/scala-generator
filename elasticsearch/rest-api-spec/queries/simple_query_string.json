@@ -1,0 +1,84 @@
+{
+  "name": "simple_query_string",
+  "className": "SimpleQueryStringQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "query",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "queryText",
+      "description": "a query to be used"
+    },
+    {
+      "name": "analyzer",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "analyzer",
+      "description": "The analyzer to use for the query string"
+    },
+    {
+      "name": "flags",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "flags",
+      "description": ""
+    },
+    {
+      "name": "default_operator",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "options": [
+        "AND",
+        "OR"
+      ],
+      "codeName": "operator",
+      "description": "The default operator"
+    },
+    {
+      "name": "lowercase_expanded_terms",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "lowercaseExpandedTerms",
+      "description": "Specify whether query terms should be lowercased"
+    },
+    {
+      "name": "fields",
+      "type": "string",
+      "multiple": true,
+      "required": true,
+      "codeName": "fields",
+      "description": "the fields to be used"
+    },
+    {
+      "name": "field_boosts",
+      "type": "map[string]*float32",
+      "multiple": false,
+      "required": true,
+      "codeName": "fieldBoosts",
+      "description": ""
+    },
+    {
+      "name": "lenient",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "lenient",
+      "description": "Specify whether format-based query failures (such as providing text to a numeric field) should be ignored"
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "locale",
+      "description": "The locale language"
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-simple-query-string-query.html"
+}

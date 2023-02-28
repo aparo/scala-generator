@@ -1,0 +1,24 @@
+{
+  "name": "filter",
+  "className": "FilterAggregation",
+  "parent": "",
+  "members": [
+    {
+      "name": "filter",
+      "type": "Filter",
+      "multiple": false,
+      "required": true,
+      "codeName": "filter",
+      "description": ""
+    },
+    {
+      "name": "sub_aggregations",
+      "type": "map[string]Aggregation",
+      "multiple": false,
+      "required": true,
+      "codeName": "subAggregations",
+      "description": ""
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-bucket-filter-aggregation.html"
+}

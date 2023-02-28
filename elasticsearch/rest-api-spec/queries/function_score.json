@@ -1,0 +1,72 @@
+{
+  "name": "function_score",
+  "className": "FunctionScoreQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "query",
+      "type": "Query",
+      "multiple": false,
+      "required": true,
+      "codeName": "query",
+      "description": "a query to be used"
+    },
+    {
+      "name": "filter",
+      "type": "Filter",
+      "multiple": false,
+      "required": false,
+      "codeName": "filter",
+      "description": "Filter of query"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "max_boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "maxBoost",
+      "description": "The max boost value"
+    },
+    {
+      "name": "score_mode",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "scoreMode",
+      "description": "The score mode"
+    },
+    {
+      "name": "boost_mode",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "boostMode",
+      "description": "The boost mode"
+    },
+    {
+      "name": "filters",
+      "type": "Filter",
+      "multiple": true,
+      "required": true,
+      "codeName": "filters",
+      "description": "The list of filters"
+    },
+    {
+      "name": "score_funcs",
+      "type": "ScoreFunction",
+      "multiple": true,
+      "required": true,
+      "codeName": "scoreFuncs",
+      "description": "The list of score functions"
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-function-score-query.html"
+}

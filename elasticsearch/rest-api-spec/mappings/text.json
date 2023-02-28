@@ -1,0 +1,39 @@
+{
+  "name": "text",
+  "className": "TextMapping",
+  "parent": "_commons",
+  "members": [
+    {
+      "name": "fielddata",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "default": false,
+      "skip_default": true,
+      "description": "Use norms"
+    },
+    {
+      "name": "position_increment_gap",
+      "type": "int",
+      "multiple": false,
+      "required": false,
+      "description": "Position increment gap"
+    },
+    {
+      "name": "eager_global_ordinals",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "description": "Use eager global ordinals"
+    },
+    {
+      "name": "fielddata_frequency_filter",
+      "type": "fielddata_frequency_filter",
+      "multiple": false,
+      "required": false,
+      "description": "Fieldata frequency filter"
+    }
+
+  ],
+  "documentation": ""
+}

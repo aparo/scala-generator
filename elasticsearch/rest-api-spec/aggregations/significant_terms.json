@@ -1,0 +1,48 @@
+{
+  "name": "significant_terms",
+  "className": "SignificantTermsAggregation",
+  "parent": "",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "field",
+      "description": "the field to be used"
+    },
+    {
+      "name": "sub_aggregations",
+      "type": "map[string]Aggregation",
+      "multiple": false,
+      "required": true,
+      "codeName": "subAggregations",
+      "description": ""
+    },
+    {
+      "name": "required_size",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "requiredSize",
+      "description": ""
+    },
+    {
+      "name": "shard_size",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "shardSize",
+      "description": ""
+    },
+    {
+      "name": "min_doc_count",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "minDocCount",
+      "description": ""
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-bucket-significantterms-aggregation.html"
+}

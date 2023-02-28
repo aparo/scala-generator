@@ -1,0 +1,16 @@
+{
+  "name": "top_hits",
+  "className": "TopHitsAggregation",
+  "parent": "",
+  "members": [
+    {
+      "name": "search_source",
+      "type": "SearchSource",
+      "multiple": false,
+      "required": false,
+      "codeName": "searchSource",
+      "description": ""
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-metrics-top-hits-aggregation.html"
+}

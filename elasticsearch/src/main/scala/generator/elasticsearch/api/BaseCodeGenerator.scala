@@ -9,7 +9,7 @@ import scala.collection.mutable
 import com.github.plokhotnyuk.jsoniter_scala.core._
 import com.github.plokhotnyuk.jsoniter_scala.macros._
 import generator.elasticsearch.DevConfig
-
+import zio._
 trait BaseCodeGenerator {
 
   def devConfig: DevConfig
@@ -24,13 +24,15 @@ trait BaseCodeGenerator {
   lazy val mappingFiles =
     os.walk(devConfig.devRestAPIPath / "mappings", skip = { f => !f.last.endsWith(".json") }).toList
 
-  def run(): Unit
+  def run(): ZIO[Any, Throwable, Unit]
 
-  protected def processFile(name: os.Path): Seq[APIEntry] =
-    if (name.baseName.startsWith("_")) Nil
+  protected def processFile(name: os.Path): ZIO[Any, Throwable, Seq[APIEntry]] =
+    if (name.baseName.startsWith("_")) ZIO.succeed(Nil)
     else {
-      val obj = readFromStream[Map[String, APIEntry]](name.getInputStream)
-      obj.map(v => v._2.copy(name = v._1)).toSeq
+      for {
+        _ <- ZIO.debug(s"Processing $name")
+        obj <- ZIO.attempt(readFromStream[Map[String, APIEntry]](name.getInputStream))
+      } yield obj.map(v => v._2.copy(name = v._1)).toSeq
     }
 
 }

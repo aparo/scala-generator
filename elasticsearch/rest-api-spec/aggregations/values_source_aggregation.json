@@ -1,0 +1,40 @@
+{
+  "name": "values_source_aggregation",
+  "className": "ValuesSourceAggregation",
+  "parent": "",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "field",
+      "description": "The field"
+    },
+    {
+      "name": "script",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "script",
+      "description": "Script"
+    },
+    {
+      "name": "lang",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "lang",
+      "description": "the language"
+    },
+    {
+      "name": "params",
+      "type": "map[string, object]",
+      "multiple": false,
+      "required": false,
+      "codeName": "params",
+      "description": "the params"
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-bucket-filter-aggregation.html"
+}

@@ -10,60 +10,59 @@ import generator.elasticsearch.{Constants, DevConfig}
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import os.Path
+import zio.ZIO
 
 class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCodeGenerator {
 
   var nativeFiltering = false
 
-  val destDir = devConfig.devScalaAPIDestPath / "elasticsearch"
-  os.makeDir(destDir)
+  val destDir: os.Path = devConfig.devScalaAPIDestPath / "src"/"main"/"scala"/"zio"/"elasticsearch"
+  if(!os.exists(destDir))
+    os.makeDir.all(destDir)
 
   lazy val elasticFiles =
-    os.walk(devConfig.devESSourcePath, skip = { f => f.last.endsWith(".java") }).toList.toList
+    os.walk(devConfig.devESSourcePath, skip = { f => f.last.endsWith(".java") }).toList
 
   val requestResponse = new ListBuffer[(String, String)]
 
-  def run(): Unit =
+  def run(): ZIO[Any, Throwable, Unit] =
 //    runMappings()
     runREST()
-  def runMappings(): Unit = {
-    val apis = mappingFiles.flatMap { f =>
-      processFile(f)
-    // match {
-    //   case Left(value) =>
-    //     println(f)
-    //     println(value)
-    //     None
-    //   case Right(value) =>
-    //     Some(value)
-    // }
-    }
-    println(apis)
+  def runMappings(): ZIO[Any, Throwable, Unit] = {
+    for {
+      apis <- ZIO.foreach(mappingFiles)(processFile)
+    } yield ()
 
   }
-  def runREST(): Unit = {
+  def runREST(): ZIO[Any, Throwable, Unit] = {
 
-    val apis = files
-      //      .filter(_.name == "get.json")
-      .flatMap { f =>
-        processFile(f)
-      }
-      .toList
-      .sortBy(_.name)
+    for {
+      apisUnsorted <- ZIO.foreach(files
+       // .filter(_.last == "get.json")
+      )(processFile)
+      apis=apisUnsorted.flatten.toList.sortBy(_.name)
+      esActions = elasticFiles
+        .filter(_.toString().contains("/action/"))
+        .filterNot(_.toString().contains("/post/"))
+        .filterNot(_.toString().contains("/rest/"))
+        .filter(_.last.endsWith("Action.java"))
+        .map(_.last.split('.').head)
+        .filterNot(_.startsWith("Abstract"))
+        .filterNot(_.startsWith("Node"))
+        .filterNot(_.endsWith("AsyncAction"))
+        .filterNot(_ == "Action")
+        .filterNot(_ == "GenericAction")
+      currentActions = apis.flatMap(_.nativeAction)
+      missing = esActions.toSet -- currentActions.map(_.split('.').last).toSet
+      zioAccessManagers=generateApis(apis)
+      _ <- ZIO.attempt(generateManagers())
+      _ <- ZIO.attempt(generateZioAccessors(zioAccessManagers))
+      _ <- ZIO.attempt (generateClientActions (destDir, apis))
+      _ <- ZIO.attempt (  generateClientActionResolver (destDir, apis))
+      _ <- ZIO.attempt (  generateEnumeration())
 
-    val esActions = elasticFiles
-      .filter(_.toString().contains("/action/"))
-      .filterNot(_.toString().contains("/post/"))
-      .filterNot(_.toString().contains("/rest/"))
-      .filter(_.last.endsWith("Action.java"))
-      .map(_.last.split('.').head)
-      .filterNot(_.startsWith("Abstract"))
-      .filterNot(_.startsWith("Node"))
-      .filterNot(_.endsWith("AsyncAction"))
-      .filterNot(_ == "Action")
-      .filterNot(_ == "GenericAction")
-    val currentActions = apis.flatMap(_.nativeAction)
-    val missing        = esActions.toSet -- currentActions.map(_.split('.').last).toSet
+    } yield ()
+
 
 //    val actionToAdd = missing.flatMap { toAdd =>
 //      elasticFiles
@@ -87,67 +86,11 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
 //    val actions         = apis.flatMap(_.nativeAction).toSet.toList.sorted
 //    PathUtils.saveScalaFile(actionMTemplate.render(actions).toString(), destDir / "elasticsearch" / "client"/ "ActionMagnet.scala")
 
-    val zioAccessManagers = new mutable.HashMap[String, String]
 
-    apis.foreach { apiEntry =>
-      // generate Request
-      generateRequest(destDir, apiEntry)
-      // generate Response
-      PathUtils.saveScalaFile(
-        apiEntry.responseClass,
-        destDir / os.up / s"${apiEntry.responseFilename.split("\\.", 1).last.replace(".", "/")}.scala",
-      )
 
-      requestResponse += apiEntry.scalaRequest -> apiEntry.scalaResponse
-      val client           = apiEntry.scope
-      val extra            = apiEntry.extra
-      val implicitsList    = apiEntry.implicits
-      val code             = apiEntry.getClientCalls
-      val zioAccessMethods = apiEntry.getClientZIOAccessorsCalls
-      val imports = List(
-        s"elasticsearch.requests.$client.${apiEntry.scalaRequest}",
-        s"elasticsearch.requests.$client.${apiEntry.scalaResponse}",
-      )
-      extras ++= extra
-      if (managers.contains(client)) {
-        managers += client -> (managers(client) + "\n\n" + code)
-        zioAccessManagers += client -> (zioAccessManagers(client) + "\n\n" + zioAccessMethods)
-        managersImports += client -> (managersImports(client) ++ imports)
-        implicits += client -> (implicits(client) ++ implicitsList)
-      } else {
-        managers += client -> code
-        zioAccessManagers += client -> zioAccessMethods
-        managersImports += client -> imports
-        implicits += client -> implicitsList
-      }
-    }
 
-    println(s"Generating new files in ${destDir}")
-    PathUtils.saveScalaFile(
-      (List(s"package ${Constants.namespaceName}.client") ++ extras.map(_._2)).mkString("\n\n"),
-      destDir / "enumerations.scala",
-    )
 
-    managers.foreach { case (name, code) =>
-      val filename = destDir / "managers" / s"${name.capitalize}Manager.scala"
-      PathUtils.saveScalaFile(
-        elasticsearch.managers.txt
-          .Manager(Constants.namespaceName, managersImports.getOrElse(name, Nil).distinct.sorted, name, code)
-          .toString(),
-        filename,
-      )
-    }
 
-    zioAccessManagers.foreach { case (name, code) =>
-      val filename = destDir / "managers" / s"${name.capitalize}Accessors.scala"
-      PathUtils.saveScalaFile(
-        code.replace("%%SERVICE%%", s"${name.capitalize}Service"),
-        filename,
-      )
-    }
-
-    generateClientActions(destDir, apis)
-    generateClientActionResolver(destDir, apis)
 //
 //    fw = new FileWriter(new File(destDir, "ImplicitsForManagers.scala"))
 //    fw.write(s"package ${Constants.namespaceName}")
@@ -163,6 +106,76 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
 //    }
 //    fw.write("\n\n}\n\n")
 //    fw.close()
+
+  }
+
+  def generateEnumeration()={
+    println(s"Generating new files in ${destDir}")
+    PathUtils.saveScalaFile(
+      (List(s"package ${Constants.namespaceName}.client") ++ extras.map(_._2)).mkString("\n\n"),
+      destDir / "enumerations.scala",
+    )
+
+  }
+
+  def generateManagers()={
+    managers.foreach { case (name, code) =>
+      val filename = destDir / "managers" / s"${name.capitalize}Manager.scala"
+      PathUtils.saveScalaFile(
+        elasticsearch.managers.txt
+          .Manager(Constants.namespaceName, managersImports.getOrElse(name, Nil).distinct.sorted, name, code)
+          .toString(),
+        filename,
+      )
+    }
+  }
+
+  def generateZioAccessors(zioAccessManagers: mutable.HashMap[String, String]) = {
+    zioAccessManagers.foreach { case (name, code) =>
+      val filename = destDir / "managers" / s"${name.capitalize}Accessors.scala"
+      PathUtils.saveScalaFile(
+        code.replace("%%SERVICE%%", s"${name.capitalize}Service"),
+        filename,
+      )
+    }  }
+
+  def generateApis(apis:Seq[APIEntry])={
+    val zioAccessManagers = new mutable.HashMap[String, String]
+
+    apis.foreach { apiEntry =>
+      // generate Request
+      generateRequest(destDir, apiEntry)
+      // generate Response
+      PathUtils.saveScalaFile(
+        apiEntry.responseClass,
+        destDir / s"${apiEntry.responseFilename.split("\\.", 1).last.replace(".", "/")}.scala".split("/").drop(2),
+      )
+      val client = apiEntry.scope
+
+//      requestResponse += apiEntry.scalaRequest -> apiEntry.scalaResponse
+      requestResponse += s"zio.elasticsearch.requests.$client.${apiEntry.scalaRequest}" -> s"zio.elasticsearch.requests.$client.${apiEntry.scalaResponse}"
+      val extra = apiEntry.extra
+      val implicitsList = apiEntry.implicits
+      val code = apiEntry.getClientCalls
+      val zioAccessMethods = apiEntry.getClientZIOAccessorsCalls
+      val imports = List(
+        s"zio.elasticsearch.requests.$client.${apiEntry.scalaRequest}",
+        s"zio.elasticsearch.requests.$client.${apiEntry.scalaResponse}",
+      )
+      extras ++= extra
+      if (managers.contains(client)) {
+        managers += client -> (managers(client) + "\n\n" + code)
+        zioAccessManagers += client -> (zioAccessManagers(client) + "\n\n" + zioAccessMethods)
+        managersImports += client -> (managersImports(client) ++ imports)
+        implicits += client -> (implicits(client) ++ implicitsList)
+      } else {
+        managers += client -> code
+        zioAccessManagers += client -> zioAccessMethods
+        managersImports += client -> imports
+        implicits += client -> implicitsList
+      }
+    }
+    zioAccessManagers
 
   }
 
@@ -187,7 +200,8 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
       case default =>
         destDir / "requests" / default
     }
-    os.makeDir(ddir)
+    if(!os.exists(ddir))
+      os.makeDir.all(ddir)
 
     val filename = ddir / s"${api.scalaRequest}.scala"
 

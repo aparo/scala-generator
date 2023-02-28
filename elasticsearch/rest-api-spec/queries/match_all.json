@@ -1,0 +1,24 @@
+{
+  "name": "match_all",
+  "className": "MatchAllQuery",
+  "parent": "Query",
+  "members": [
+    {
+      "name": "norms_field",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "normsField",
+      "description": ""
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-match-all-query.html"
+}

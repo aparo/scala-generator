@@ -1,0 +1,17 @@
+{
+  "name": "geo_point",
+  "className": "GeoPointMapping",
+  "parent": "_commons",
+  "members": [
+    {
+      "name": "ignore_malformed",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "default": false,
+      "skip_default": true,
+      "description": "Ignore malformed dates"
+    }
+  ],
+  "documentation": ""
+}

@@ -1,0 +1,32 @@
+{
+  "name": "span_prefix",
+  "className": "SpanPrefixQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "prefix",
+      "type": "SpanQuery",
+      "multiple": false,
+      "required": true,
+      "codeName": "prefix",
+      "description": "The prefix of query"
+    },
+    {
+      "name": "rewrite",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "rewrite",
+      "description": ""
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    }
+  ],
+  "documentation": ""
+}

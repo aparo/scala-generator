@@ -1,0 +1,55 @@
+{
+  "name": "completion",
+  "className": "CompletionMapping",
+  "parent": "",
+  "members": [
+    {
+      "name": "analyzer",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "description": "The default analyzer"
+    },
+    {
+      "name": "search_analyzer",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "description": "The search analyzer"
+    },
+    {
+      "name": "preserve_separators",
+      "type": "boolean",
+      "multiple": false,
+      "required": false,
+      "default": true,
+      "description": "Preserve terms separators"
+    },
+    {
+      "name": "preserve_position_increments",
+      "type": "boolean",
+      "multiple": false,
+      "required": false,
+      "default": true,
+      "description": "Preserve position increments"
+    },
+    {
+      "name": "max_input_length",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "default": 50,
+      "skip_default": true,
+      "description": "Max Input Lenght"
+    },
+    {
+      "name": "context",
+      "type": "object",
+      "disabled": false,
+      "multiple": false,
+      "required": false,
+      "description": "Max Input Lenght"
+    }
+  ],
+  "documentation": ""
+}

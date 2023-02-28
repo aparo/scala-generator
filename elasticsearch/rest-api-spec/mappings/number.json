@@ -1,0 +1,42 @@
+{
+  "name": "number",
+  "className": "NumberMapping",
+  "parent": "_commons",
+  "members": [
+    {
+      "name": "type",
+      "type": "enum",
+      "codeName": "numberType",
+      "multiple": false,
+      "required": true,
+      "options": ["half_float", "float", "double", "byte", "short", "integer", "long"],
+      "description": "The Type of the field"
+    },
+    {
+      "name": "null_value",
+      "type": "datetime",
+      "multiple": false,
+      "required": false,
+      "codeName": "nullValue",
+      "description": "The value is the field is null"
+    },
+    {
+      "name": "ignore_malformed",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "default": false,
+      "skip_default": true,
+      "description": "Ignore malformed dates"
+    },
+    {
+      "name": "coerce",
+      "type": "boolean",
+      "multiple": false,
+      "required": false,
+      "description": "Force the field type"
+    }
+
+      ],
+  "documentation": ""
+}

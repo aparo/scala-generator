@@ -1,0 +1,96 @@
+{
+  "name": "range",
+  "className": "rangeAggregationEntry",
+  "parent": "",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "field",
+      "description": "the field to be used"
+    },
+    {
+      "name": "script",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "script",
+      "description": "the script to be executed"
+    },
+    {
+      "name": "lang",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "lang",
+      "description": "the scripting language"
+    },
+    {
+      "name": "params",
+      "type": "jobject",
+      "multiple": false,
+      "required": true,
+      "codeName": "params",
+      "description": "additional parameters to be passed to a script"
+    },
+    {
+      "name": "sub_aggregations",
+      "type": "map[string]Aggregation",
+      "multiple": false,
+      "required": true,
+      "codeName": "subAggregations",
+      "description": ""
+    },
+    {
+      "name": "keyed",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "keyed",
+      "description": ""
+    },
+    {
+      "name": "unmapped",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "unmapped",
+      "description": ""
+    },
+    {
+      "name": "entries",
+      "type": "rangeAggregationEntry",
+      "multiple": true,
+      "required": true,
+      "codeName": "entries",
+      "description": ""
+    },
+    {
+      "name": "key",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "Key",
+      "description": ""
+    },
+    {
+      "name": "from",
+      "type": "jvalue",
+      "multiple": false,
+      "required": true,
+      "codeName": "From",
+      "description": ""
+    },
+    {
+      "name": "to",
+      "type": "jvalue",
+      "multiple": false,
+      "required": true,
+      "codeName": "To",
+      "description": ""
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-bucket-range-aggregation.html"
+}

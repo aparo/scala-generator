@@ -1,0 +1,40 @@
+{
+  "name": "date",
+  "className": "DateTimeMapping",
+  "parent": "_commons",
+  "members": [
+    {
+      "name": "null_value",
+      "type": "datetime",
+      "multiple": false,
+      "required": false,
+      "codeName": "nullValue",
+      "description": "The value is the field is null"
+    },
+    {
+      "name": "ignore_malformed",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "default": false,
+      "skip_default": true,
+      "description": "Ignore malformed dates"
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "description": "the date locale"
+    },
+    {
+      "name": "format",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "description": "the date format"
+    }
+
+  ],
+  "documentation": ""
+}

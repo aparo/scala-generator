@@ -1,0 +1,78 @@
+{
+  "name": "fuzzy",
+  "className": "FuzzyQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "field",
+      "description": ""
+    },
+    {
+      "name": "value",
+      "type": "jvalue",
+      "multiple": false,
+      "required": true,
+      "codeName": "value",
+      "inField": true,
+      "description": "the value to be used"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "inField": true,
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "transpositions",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "transpositions",
+      "inField": true,
+      "description": ""
+    },
+    {
+      "name": "fuzziness",
+      "type": "jvalue",
+      "multiple": false,
+      "required": false,
+      "codeName": "fuzziness",
+      "inField": true,
+      "description": ""
+    },
+    {
+      "name": "prefix_length",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "prefixLength",
+      "inField": true,
+      "description": "The length of prefix"
+    },
+    {
+      "name": "max_expansions",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "maxExpansions",
+      "inField": true,
+      "description": "Max value for expansions"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "queryName",
+      "description": "The name of the query"
+    }
+  ],
+  "documentation": ""
+}

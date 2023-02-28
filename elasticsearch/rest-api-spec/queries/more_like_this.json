@@ -1,0 +1,144 @@
+{
+  "name": "more_like_this",
+  "className": "MoreLikeThisQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "fields",
+      "type": "string",
+      "multiple": true,
+      "required": true,
+      "codeName": "fields",
+      "description": "the fields to be used"
+    },
+    {
+      "name": "like_text",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "likeText",
+      "description": ""
+    },
+    {
+      "name": "percent_terms_to_match",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "percentTermsToMatch",
+      "description": "How many terms have to match in order to consider the document a match (default: 0.3)"
+    },
+    {
+      "name": "min_term_freq",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "minTermFreq",
+      "description": "The term frequency as percent: terms with lower occurence in the source document will be ignored"
+    },
+    {
+      "name": "max_query_terms",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "maxQueryTerms",
+      "description": "The maximum query terms to be included in the generated query"
+    },
+    {
+      "name": "stop_words",
+      "type": "string",
+      "multiple": true,
+      "required": false,
+      "codeName": "stopWords",
+      "description": "A list of stop words to be ignored"
+    },
+    {
+      "name": "min_doc_freq",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "minDocFreq",
+      "description": "The word occurrence frequency as count: words with lower occurrence in the corpus will be ignored"
+    },
+    {
+      "name": "max_doc_freq",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "maxDocFreq",
+      "description": "The word occurrence frequency as count: words with higher occurrence in the corpus will be ignored"
+    },
+    {
+      "name": "min_word_len",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "minWordLen",
+      "description": "The minimum value of word length"
+    },
+    {
+      "name": "max_word_len",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "maxWordLen",
+      "description": "The maximum value of word length"
+    },
+    {
+      "name": "boost_terms",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boostTerms",
+      "description": "The word occurrence frequency as count: words with higher occurrence in the corpus will be ignored"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "analyzer",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "analyzer",
+      "description": "The analyzer to use for the query string"
+    },
+    {
+      "name": "fail_on_unsupported_field",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "failOnUnsupportedField",
+      "description": "True if fail on unsupported field"
+    },
+    {
+      "name": "_name",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "_name",
+      "description": "the name for the query"
+    },
+    {
+      "name": "ids",
+      "type": "string",
+      "multiple": true,
+      "required": false,
+      "codeName": "docs",
+      "description": "List of ids"
+    },
+    {
+      "name": "include",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "docs",
+      "description": ""
+    }
+  ],
+  "documentation": ""
+}

@@ -1,0 +1,76 @@
+{
+  "name": "_common",
+  "className": "",
+  "parent": "",
+  "members": [
+    {
+      "name": "doc_values",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "docValues",
+      "description": "DocValue value"
+    },
+    {
+      "name": "store",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "default": false,
+      "description": "If the field must be stored"
+    },
+    {
+      "name": "index",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "default": true,
+      "description": "If the field must be indexed"
+    },
+    {
+      "name": "boost",
+      "type": "float",
+      "multiple": false,
+      "required": false,
+      "default": 1.0,
+      "skip_default": true,
+      "description": "If the field must be stored"
+    },
+    {
+      "name": "index_options",
+      "type": "enum",
+      "codeName": "indexOptions",
+      "options":["docs", "freqs", "positions","offsets"],
+      "multiple": false,
+      "required": false,
+      "description": "The field index options"
+    },
+    {
+      "name": "similarity",
+      "type": "object",
+      "codeName": "Similarity",
+      "multiple": false,
+      "required": false,
+      "description": "The field similarity"
+    },
+    {
+      "name": "copy_to",
+      "type": "string",
+      "codeName": "copyTo",
+      "multiple": true,
+      "required": false,
+      "skip_default": true,
+      "description": "Copy content to a new field"
+    },
+    {
+      "name": "fields",
+      "type": "map",
+      "subType": "String, NestableMapping",
+      "codeName": "fields",
+      "multiple": true,
+      "required": false,
+      "description": "Copy content to a new field"
+    }
+  ],
+  "documentation": ""
+}

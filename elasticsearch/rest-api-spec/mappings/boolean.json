@@ -1,0 +1,16 @@
+{
+  "name": "boolean",
+  "className": "BooleanMapping",
+  "parent": "_commons",
+  "members": [
+    {
+      "name": "null_value",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "nullValue",
+      "description": "The value is the field is null"
+    }
+  ],
+  "documentation": ""
+}

@@ -1,0 +1,8 @@
+{
+  "name": "binary",
+  "className": "BinaryMapping",
+  "parent": "_commons",
+  "members": [
+  ],
+  "documentation": ""
+}

@@ -1,0 +1,40 @@
+{
+  "name": "span_not",
+  "className": "SpanNotQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "include",
+      "type": "SpanQuery",
+      "multiple": false,
+      "required": true,
+      "codeName": "include",
+      "description": ""
+    },
+    {
+      "name": "exclude",
+      "type": "SpanQuery",
+      "multiple": false,
+      "required": true,
+      "codeName": "exclude",
+      "description": ""
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "_name",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "_name",
+      "description": "the name of the query"
+    }
+  ],
+  "documentation": ""
+}

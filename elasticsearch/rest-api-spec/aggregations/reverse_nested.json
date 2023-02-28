@@ -1,0 +1,16 @@
+{
+  "name": "reverse_nested",
+  "className": "ReverseNested",
+  "parent": "",
+  "members": [
+    {
+      "name": "path",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "path",
+      "description": ""
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-bucket-filter-aggregation.html"
+}

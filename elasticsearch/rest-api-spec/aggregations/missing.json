@@ -1,0 +1,24 @@
+{
+  "name": "missing",
+  "className": "MissingAggregation",
+  "parent": "",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "field",
+      "description": "the field to be used"
+    },
+    {
+      "name": "sub_aggregations",
+      "type": "map[string]Aggregation",
+      "multiple": false,
+      "required": true,
+      "codeName": "subAggregations",
+      "description": ""
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-bucket-missing-aggregation.html"
+}

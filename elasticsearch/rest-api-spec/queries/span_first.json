@@ -1,0 +1,40 @@
+{
+  "name": "span_first",
+  "className": "SpanFirstQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "match",
+      "type": "SpanQuery",
+      "multiple": false,
+      "required": true,
+      "codeName": "match",
+      "description": ""
+    },
+    {
+      "name": "end",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "end",
+      "description": "Span end value"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "queryName",
+      "description": "The name of the query"
+    }
+  ],
+  "documentation": ""
+}

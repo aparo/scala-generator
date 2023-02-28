@@ -1,0 +1,16 @@
+{
+  "name": "global",
+  "className": "GlobalAggregation",
+  "parent": "",
+  "members": [
+    {
+      "name": "sub_aggregations",
+      "type": "map[string]Aggregation",
+      "multiple": false,
+      "required": true,
+      "codeName": "subAggregations",
+      "description": ""
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-bucket-global-aggregation.html"
+}

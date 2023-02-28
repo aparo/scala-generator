@@ -1,0 +1,16 @@
+{
+  "name": "wrapped",
+  "className": "WrappedQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "query",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "query",
+      "description": "a query to be used"
+    }
+  ],
+  "documentation": ""
+}

@@ -1,0 +1,28 @@
+{
+  "name": "aggregation",
+  "className": "Aggregation",
+  "parent": "",
+  "members": [
+    {
+      "name": "aggregations",
+      "type": "BytesReference",
+      //TODO ????
+      "multiple": false,
+      "required": true,
+      "codeName": "aggregationsBinary",
+      "description": ""
+      //TODO ????
+    },
+    {
+      "name": "aggregations_binary",
+      "type": "BytesReference",
+      //TODO ????
+      "multiple": false,
+      "required": true,
+      "codeName": "aggregationsBinary",
+      //TODO ????
+      "description": ""
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-bucket-filter-aggregation.html"
+}

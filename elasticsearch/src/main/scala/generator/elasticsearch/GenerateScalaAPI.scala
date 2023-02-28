@@ -14,7 +14,7 @@ object GenerateScalaAPI extends ZIOAppDefault {
     for {
       config <- DevConfig.fromEnvironment
       generator = new ElasticSearchScalaCodeGenerator(config)
-      _ <- ZIO.attempt(generator.run())
+      _ <- generator.run()
     } yield ()
 
 }

@@ -1,0 +1,48 @@
+{
+  "name": "avg",
+  "className": "AvgAggregation",
+  "parent": "",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "field",
+      "description": "the field to be used"
+    },
+    {
+      "name": "script",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "script",
+      "description": "the script to be executed"
+    },
+    {
+      "name": "lang",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "lang",
+      "description": "the scripting language"
+    },
+    {
+      "name": "params",
+      "type": "jobject",
+      "multiple": false,
+      "required": true,
+      "codeName": "params",
+      "description": "additional parameters to be passed to a script"
+    },
+    {
+      "name": "sub_aggregations",
+      "type": "map[string]Aggregation",
+      "multiple": false,
+      "required": true,
+      "codeName": "subAggregations",
+      "description": ""
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-metrics-avg-aggregation.html"
+}

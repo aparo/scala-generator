@@ -1,0 +1,72 @@
+{
+  "name": "geo_shape",
+  "className": "GeoShapeQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "strategy",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "strategy",
+      "description": "Geo shape strategy"
+    },
+    {
+      "name": "shape",
+      "type": "jvalue",
+      "multiple": false,
+      "required": false,
+      "codeName": "shape",
+      "description": ""
+    },
+    {
+      "name": "id",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "indexedShapeId",
+      "description": "The shape id"
+    },
+    {
+      "name": "type",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "indexedShapeType",
+      "description": "The shape type"
+    },
+    {
+      "name": "index",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "indexedShapeIndex",
+      "description": "The shape index"
+    },
+    {
+      "name": "path",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "indexedShapePath",
+      "description": "The shape path"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "_name",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "queryName",
+      "description": "The name of the query"
+    }
+  ],
+  "documentation": ""
+}

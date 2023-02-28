@@ -1,0 +1,136 @@
+{
+  "name": "terms",
+  "className": "TermsAggregation",
+  "parent": "",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "field",
+      "description": "the field to be used"
+    },
+    {
+      "name": "script",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "script",
+      "description": "the script to be executed"
+    },
+    {
+      "name": "lang",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "lang",
+      "description": "the scripting language"
+    },
+    {
+      "name": "params",
+      "type": "jobject",
+      "multiple": false,
+      "required": true,
+      "codeName": "params",
+      "description": "additional parameters to be passed to a script"
+    },
+    {
+      "name": "sub_aggregations",
+      "type": "map[string]Aggregation",
+      "multiple": false,
+      "required": true,
+      "codeName": "subAggregations",
+      "description": ""
+    },
+    {
+      "name": "size",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "size",
+      "description": ""
+    },
+    {
+      "name": "shard_size",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "shardSize",
+      "description": ""
+    },
+    {
+      "name": "min_doc_count",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "minDocCount",
+      "description": ""
+    },
+    {
+      "name": "value_type",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "valueType",
+      "description": ""
+    },
+    {
+      "name": "order",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "order",
+      "description": ""
+    },
+    {
+      "name": "order_asc",
+      "type": "bool",
+      "multiple": false,
+      "required": true,
+      "codeName": "orderAsc",
+      "description": ""
+    },
+    {
+      "name": "include_pattern",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "includePattern",
+      "description": ""
+    },
+    {
+      "name": "include_flags",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "includeFlags",
+      "description": ""
+    },
+    {
+      "name": "exclude_pattern",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "excludePattern",
+      "description": ""
+    },
+    {
+      "name": "exclude_flags",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "excludeFlags",
+      "description": ""
+    },
+    {
+      "name": "execution_hint",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "executionHint",
+      "description": ""
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-bucket-terms-aggregation.html"
+}

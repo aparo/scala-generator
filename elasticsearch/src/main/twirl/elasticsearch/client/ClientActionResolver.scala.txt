@@ -9,21 +9,21 @@ import zio.elasticsearch.exception.FrameworkException
 @for(action <- importList) {import @action
 }
 
-trait ClientActionResolver extends ClientActions with LoggingSupport {
+trait ClientActionResolver extends ClientActions {
 
 @for(action <- reqResps) {
     def execute(
       request: @{action._1}
-    ): ZioResponse[@{action._2}] =
+    ): ZIO[Any, FrameworkException, @{action._2}] =
       doCall(request).flatMap(convertResponse[@{action._2}](request))
 
 }
 
- def convertResponse[T: Encoder: Decoder](
+ def convertResponse[T: JsonValueCodec](
     request: ActionRequest
   )(
     resp: ESResponse
-  ): ZioResponse[T] = {
+  ): ZIO[Any, FrameworkException, T] = {
     import ElasticSearchSearchException._
 
     request match {

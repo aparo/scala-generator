@@ -1,0 +1,56 @@
+{
+  "name": "join",
+  "className": "JoinQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "target",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "target",
+      "description": ""
+    },
+    {
+      "name": "type",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "type",
+      "description": "The type of join"
+    },
+    {
+      "name": "query",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "query",
+      "description": "a query to be used"
+    },
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "field",
+      "description": "The field"
+    },
+    {
+      "name": "index",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "index",
+      "description": "The join index"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    }
+  ],
+  "documentation": ""
+}

@@ -1,0 +1,56 @@
+{
+  "name": "has_parent",
+  "className": "HasParentQuery",
+  "parent": "Query",
+  "members": [
+    {
+      "name": "query",
+      "type": "Query",
+      "multiple": false,
+      "required": true,
+      "codeName": "query",
+      "description": "a query to be used"
+    },
+    {
+      "name": "parent_type",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "parentType",
+      "description": "the type of the parent"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "The boost value for the current query"
+    },
+    {
+      "name": "score_type",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "scoreType",
+      "description": "The type of score"
+    },
+    {
+      "name": "score_mode",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "scoreMode",
+      "description": "The type of score"
+    },
+    {
+      "name": "_name",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "_name",
+      "description": "The name for the query"
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-has-parent-query.html"
+}

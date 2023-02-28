@@ -75,7 +75,7 @@ object PathUtils {
     if (os.exists(file)) {
       val oldContent = os.read(file)
       if (oldContent != content) {
-        os.write(file, content)
+        os.write.over(file, content, createFolders = true)
       }
     } else {
       os.write(file, content, createFolders = true)

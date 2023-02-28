@@ -16,11 +16,11 @@ class ElasticSearchGenerator(val devConfig: DevConfig, val pathScope: String, va
 
   val root    = devConfig.devRestAPIPath
   val destDir = devConfig.devScalaAPIDestPath
-  os.makeDir(destDir)
+  os.makeDir.all(destDir)
 
   lazy val classes: List[ClassDef] = {
-    var results = new mutable.ListBuffer[ClassDef]
     // loading queries
+    val results = new mutable.ListBuffer[ClassDef]
     os.walk(root / pathScope, skip = _.last.endsWith(".json")).foreach { filename =>
       println(s"Loading: $filename")
       results += ClassDef.load(filename)

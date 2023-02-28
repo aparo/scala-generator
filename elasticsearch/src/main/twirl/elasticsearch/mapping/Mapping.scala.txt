@@ -1,6 +1,5 @@
 @(qf: generator.elasticsearch.klass.mapping.MappingClassDef)
 
-@@JsonCodec
 case class @(qf.className)(@qf.scalaClassSignature
            @(" "*qf.className.get.length)) extends NestableMapping {
 
@@ -10,6 +9,7 @@ case class @(qf.className)(@qf.scalaClassSignature
 }
 
 object @(qf.className) extends MappingType[@(qf.className)] {
+    implicit val jsonCodec: JsonValueCodec[@(qf.className)] = JsonCodecMaker.make[@(qf.className)](CodecMakerConfig.withFieldNameMapper(JsonCodecMaker.enforceCamelCase))
 
     val NAME="@(qf.name)"
 

@@ -1,0 +1,25 @@
+{
+  "name": "ip",
+  "className": "IpMapping",
+  "parent": "_commons",
+  "members": [
+    {
+      "name": "null_value",
+      "type": "datetime",
+      "multiple": false,
+      "required": false,
+      "codeName": "nullValue",
+      "description": "The value is the field is null"
+    },
+    {
+      "name": "ignore_malformed",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "default": false,
+      "skip_default": true,
+      "description": "Ignore malformed dates"
+    }
+  ],
+  "documentation": ""
+}

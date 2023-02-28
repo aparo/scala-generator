@@ -1,0 +1,40 @@
+{
+  "name": "indices",
+  "className": "IndicesQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "indices",
+      "type": "string",
+      "multiple": true,
+      "required": true,
+      "codeName": "indices",
+      "description": "A list of indices"
+    },
+    {
+      "name": "query",
+      "type": "Query",
+      "multiple": false,
+      "required": true,
+      "codeName": "query",
+      "description": "a query to be used"
+    },
+    {
+      "name": "no_match_query",
+      "type": "Query",
+      "multiple": false,
+      "required": false,
+      "codeName": "noMatchQuery",
+      "description": ""
+    },
+    {
+      "name": "_name",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "queryName",
+      "description": "The name of the query"
+    }
+  ],
+  "documentation": ""
+}

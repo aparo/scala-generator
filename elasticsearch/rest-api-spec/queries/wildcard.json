@@ -1,0 +1,51 @@
+{
+  "name": "wildcard",
+  "className": "WildcardQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "field",
+      "description": "the field to be used"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "wildcard",
+      "inField": true,
+      "description": ""
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "inField": true,
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "rewrite",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "inField": true,
+      "codeName": "rewrite",
+      "description": ""
+    },
+    {
+      "name": "_name",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "queryName",
+      "description": "The name of the query"
+    }
+  ],
+  "documentation": ""
+}

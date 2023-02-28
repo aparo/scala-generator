@@ -1,0 +1,221 @@
+{
+  "highlight": {
+    "params": {
+      "pre_tags": {
+        "type": "list",
+        "subtype": "string",
+        "description": "the highlighting will wrap highlighted text in pre_tag and post_tags",
+        "required": false,
+        "default": [
+          "<em>"
+        ]
+      },
+      "post_tags": {
+        "type": "list",
+        "subtype": "string",
+        "description": "the highlighting will wrap highlighted text in pre_tag and post_tags",
+        "required": false,
+        "default": [
+          "<em>"
+        ]
+      },
+      "tags_schema": {
+        "type": "string",
+        "description": "select a tag schema",
+        "required": false,
+        "default": "styled"
+      },
+      "order": {
+        "type": "string",
+        "description": " it is possible to specify that highlighted fragments need to be sorted",
+        "required": false,
+        "default": "score"
+      },
+      "encoder": {
+        "type": "string",
+        "description": "An encoder parameter can be used to define how highlighted text will be encoded. It can be either default (no encoding) or html (will escape html, if you use html highlighting tags)",
+        "required": false,
+        "default": "default"
+      },
+      "require_field_match": {
+        "type": "boolean",
+        "description": "can be set to true which will cause a field to be highlighted only if a query matched that field. false means that terms are highlighted on all requested fields regardless if the query matches specifically on them",
+        "required": false,
+        "default": false
+      },
+      "type": {
+        "type": "string",
+        "description": "An encoder parameter can be used to define how highlighted text will be encoded. It can be either default (no encoding) or html (will escape html, if you use html highlighting tags)",
+        "required": false,
+        "default": "default"
+      },
+      "fragment_size": {
+        "type": "int",
+        "description": "Each field highlighted can control the size of the highlighted fragment in characters (defaults to 100)",
+        "required": false,
+        "default": 100
+      },
+      "number_of_fragments": {
+        "type": "int",
+        "description": "maximum number of fragments to return (defaults to 5)",
+        "required": false,
+        "default": 5
+      },
+      "boundary_max_scan": {
+        "type": "int",
+        "description": "The boundary_max_scan allows to control how far to look for boundary characters, and defaults to 20.",
+        "required": false,
+        "default": 20
+      },
+      "boundary_chars": {
+        "type": "string",
+        "description": "boundary_chars can be configured to define what constitutes a boundary for highlighting.It’s a single string with each boundary character defined in it. It defaults to .,!? tn.",
+        "required": false,
+        "default": ".,!? tn"
+      },
+      "fragmenter": {
+        "type": "string",
+        "description": "TODO:???",
+        "required": false
+      },
+      "no_match_size": {
+        "type": "int",
+        "description": "we can return a snippet of text from the beginning of the field by setting no_match_size (default 0) to the length of the text that you want returned. The actual length may be shorter than specified as it tries to break on a word boundary. When using the postings highlighter it is not possible to control the actual size of the snippet, therefore the first sentence gets returned whenever no_match_size is greater than 0",
+        "required": false,
+        "default": 0
+      },
+      "force_source": {
+        "type": "boolean",
+        "description": "Forces the highlighting to highlight fields based on the source even if fields are stored separately. Defaults to false",
+        "required": false,
+        "default": false
+      },
+      "phrase_limit": {
+        "type": "int",
+        "description": "The fast-vector-highlighter has a phrase_limit parameter that prevents it from analyzing too many phrases and eating tons of memory. It defaults to 256 so only the first 256 matching phrases in the document scored considered. You can raise the limit with the phrase_limit parameter but keep in mind that scoring more phrases consumes more time and memory.",
+        "required": false,
+        "default": 256
+      },
+      "highlight_filter": {
+        "type": "filter",
+        "description": "highlight filter",
+        "required": false
+      },
+      "fields": {
+        "type": "map",
+        "subtype": "string|content_highlight",
+        "description": "fields content",
+        "required": false
+      }
+    }
+  },
+  "content_highlight": {
+    "params": {
+      "pre_tags": {
+        "type": "list",
+        "subtype": "string",
+        "description": "the highlighting will wrap highlighted text in pre_tag and post_tags",
+        "required": false,
+        "default": [
+          "<em>"
+        ]
+      },
+      "post_tags": {
+        "type": "list",
+        "subtype": "string",
+        "description": "the highlighting will wrap highlighted text in pre_tag and post_tags",
+        "required": false,
+        "default": [
+          "<em>"
+        ]
+      },
+      "fragment_size": {
+        "type": "int",
+        "description": "Each field highlighted can control the size of the highlighted fragment in characters (defaults to 100)",
+        "required": false,
+        "default": 100
+      },
+      "fragment_offset": {
+        "type": "int",
+        "description": " fragment_offset parameter to control the margin to start highlighting from",
+        "required": false,
+        "default": 0
+      },
+      "number_of_fragments": {
+        "type": "int",
+        "description": "maximum number of fragments to return (defaults to 5)",
+        "required": false,
+        "default": 5
+      },
+      "matched_fields": {
+        "type": "list",
+        "subtype": "string",
+        "description": "matched_fields must have term_vector set to with_positions_offsets but only the field to which the matches are combined is loaded so only that field would benefit from having store set to yes.",
+        "required": false
+      },
+      "order": {
+        "type": "string",
+        "description": " it is possible to specify that highlighted fragments need to be sorted",
+        "required": false,
+        "default": "score"
+      },
+      "require_field_match": {
+        "type": "boolean",
+        "description": "can be set to true which will cause a field to be highlighted only if a query matched that field. false means that terms are highlighted on all requested fields regardless if the query matches specifically on them",
+        "required": false,
+        "default": false
+      },
+      "type": {
+        "type": "string",
+        "description": "An encoder parameter can be used to define how highlighted text will be encoded. It can be either default (no encoding) or html (will escape html, if you use html highlighting tags)",
+        "required": false,
+        "default": "default"
+      },
+      "boundary_max_scan": {
+        "type": "int",
+        "description": "The boundary_max_scan allows to control how far to look for boundary characters, and defaults to 20.",
+        "required": false,
+        "default": 20
+      },
+      "boundary_chars": {
+        "type": "string",
+        "description": "boundary_chars can be configured to define what constitutes a boundary for highlighting.It’s a single string with each boundary character defined in it. It defaults to .,!? tn.",
+        "required": false,
+        "default": ".,!? tn"
+      },
+      "fragmenter": {
+        "type": "string",
+        "description": "TODO:???",
+        "required": false
+      },
+      "no_match_size": {
+        "type": "int",
+        "description": "we can return a snippet of text from the beginning of the field by setting no_match_size (default 0) to the length of the text that you want returned. The actual length may be shorter than specified as it tries to break on a word boundary. When using the postings highlighter it is not possible to control the actual size of the snippet, therefore the first sentence gets returned whenever no_match_size is greater than 0",
+        "required": false,
+        "default": 0
+      },
+      "force_source": {
+        "type": "boolean",
+        "description": "Forces the highlighting to highlight fields based on the source even if fields are stored separately. Defaults to false",
+        "required": false,
+        "default": false
+      },
+      "phrase_limit": {
+        "type": "int",
+        "description": "The fast-vector-highlighter has a phrase_limit parameter that prevents it from analyzing too many phrases and eating tons of memory. It defaults to 256 so only the first 256 matching phrases in the document scored considered. You can raise the limit with the phrase_limit parameter but keep in mind that scoring more phrases consumes more time and memory.",
+        "required": false,
+        "default": 256
+      },
+      "highlight_query": {
+        "type": "query",
+        "description": "highlight query",
+        "required": false
+      },
+      "highlight_filter": {
+        "type": "filter",
+        "description": "highlight filter",
+        "required": false
+      }
+    }
+  }
+}

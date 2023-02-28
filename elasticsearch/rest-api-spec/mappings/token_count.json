@@ -1,0 +1,23 @@
+{
+  "name": "token_count",
+  "className": "TokenCountMapping",
+  "parent": "_commons",
+  "members": [
+    {
+      "name": "null_value",
+      "type": "datetime",
+      "multiple": false,
+      "required": false,
+      "codeName": "nullValue",
+      "description": "The value is the field is null"
+    },
+    {
+      "name": "analyzer",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "description": "the analyzer to be used"
+    }
+  ],
+  "documentation": ""
+}

@@ -1,0 +1,35 @@
+{
+  "name": "fielddata_frequency_filter",
+  "className": "FielddataFrequencyFilter",
+  "members": [
+    {
+      "name": "min",
+      "type": "int",
+      "multiple": false,
+      "required": false,
+      "default": 0,
+      "skip_default": true,
+      "description": "Minimum filter value"
+    },
+    {
+      "name": "max",
+      "type": "int",
+      "multiple": false,
+      "required": false,
+      "default": "Integer.MAX_VALUE",
+      "skip_default": true,
+      "description": "Minimum filter value"
+    },
+    {
+      "name": "min_segment_size",
+      "type": "int",
+      "multiple": false,
+      "required": false,
+      "default": 0,
+      "skip_default": true,
+      "description": "Minimum filter value"
+    }
+
+  ],
+  "documentation": ""
+}

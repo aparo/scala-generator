@@ -7,7 +7,7 @@ package generator.elasticsearch;
 object Constants {
 
   val destPackage:   String = "elasticsearch"
-  val namespaceName: String = "elasticsearch"
+  val namespaceName: String = "zio.elasticsearch"
   val esClassName:   String = "ElasticSearch"
 
 }

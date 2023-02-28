@@ -58,7 +58,7 @@ lazy val generator = project
       Deps.scopt,
       // Deps.ammoniteOps,
       Deps.osLib,
-      // Deps.ts,
+      Deps.ts,
       Deps.scalatest % Test,
       Deps.zioTest,
       Deps.zioTestSbt,
@@ -106,7 +106,7 @@ lazy val baseSettings: Project => Project =
         url("https://github.com/aparo"),
       ),
     ),
-    scalaVersion := "3.2.1",
+    scalaVersion := "2.13.10",
     scalacOptions ~= (_.filterNot(Set("-Ywarn-unused:imports", "-Ywarn-unused:params", "-Xfatal-warnings"))),
     /* disable scaladoc */
     Compile / doc / sources := Nil,

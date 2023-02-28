@@ -1,0 +1,56 @@
+{
+  "name": "span_near",
+  "className": "SpanNearQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "clauses",
+      "type": "SpanQuery",
+      "multiple": true,
+      "required": true,
+      "codeName": "clauses",
+      "description": "The clauses of query"
+    },
+    {
+      "name": "slop",
+      "type": "integer",
+      "multiple": false,
+      "required": true,
+      "codeName": "slop",
+      "description": ""
+    },
+    {
+      "name": "in_order",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "inOrder",
+      "description": ""
+    },
+    {
+      "name": "collect_payloads",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "collectPayloads",
+      "description": ""
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "_name",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "_name",
+      "description": "the name of the query"
+    }
+  ],
+  "documentation": ""
+}

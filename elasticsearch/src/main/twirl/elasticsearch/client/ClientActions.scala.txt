@@ -21,6 +21,6 @@ trait ClientActions {
     eitherResponse: Either[FrameworkException, ESResponse]
   ): Either[FrameworkException, T]
 
-@for(action <- reqResps) {    def execute(request: @{action._1}): ZioResponse[@{action._2}]
+@for(action <- reqResps) {    def execute(request: @{action._1}): ZIO[Any, FrameworkException, @{action._2}]
 }
 }

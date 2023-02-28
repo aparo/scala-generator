@@ -390,13 +390,17 @@ case class APIEntry(
     // generating class documentation
     text += s"package $responsePackage\n\n"
     text += s"import scala.collection.mutable\n"
-    text += s"import io.circe.derivation.annotations._\n"
+    text += s"import com.github.plokhotnyuk.jsoniter_scala.core._\n"
+    text += s"import com.github.plokhotnyuk.jsoniter_scala.macros._\n"
     text ++= extra.map(v => s"import ${Constants.namespaceName}.${v._1}\n")
 
     text ++= cookedDocumentation.map(s => "  " + s)
 
-    text += s"@JsonCodec\n"
     text += s"final case class $scalaResponse(){\n"
+    text += "}\n"
+
+    text += s"object $scalaResponse{\n"
+    text += s"implicit val jsonCodec: JsonValueCodec[$scalaResponse] = JsonCodecMaker.make[$scalaResponse](CodecMakerConfig.withFieldNameMapper(JsonCodecMaker.enforceCamelCase))"
     text += "}\n"
 
     text.mkString
@@ -467,7 +471,7 @@ case class APIEntry(
     text.mkString
   }
 
-  def getRequestZioReturn: String = s"ZioResponse[${getRequestReturn}]"
+  def getRequestZioReturn: String = s"ZIO[Any, FrameworkException, ${getRequestReturn}]"
 
   def getRequestReturn: String =
     if (nativeResponse.isDefined)
@@ -514,16 +518,17 @@ case class APIEntry(
     doc ++= cookedDocumentation
     //    doc += "\n"
     val classDef =
-      doc += "@JsonCodec\n"
+      doc += "\n"
     doc += s"final case class ${scalaRequest}(\n"
 
     val newLineFunc: String = " " * classDef.length
 
     doc += this.parameters
       .map { parameter =>
-        val key = if (parameter.name != parameter.parameterName) {
-          s"""@JsonKey("${parameter.name}") """
-        } else ""
+//        val key = if (parameter.name != parameter.parameterName) {
+//          s"""@JsonKey("${parameter.name}") """
+//        } else ""
+        val key=""
         newLineFunc + s"$key${parameter.getDefParameterNoVar}"
       }
       .toList
@@ -544,8 +549,8 @@ case class APIEntry(
 
     doc += "}\n"
     doc += "\n"
-//    doc += "\n"
-//    doc += s"object ${scalaRequest} {\n"
+    doc += s"object ${scalaRequest} {\n"
+    doc += s"implicit val jsonCodec: JsonValueCodec[$scalaRequest] = JsonCodecMaker.make[$scalaRequest](CodecMakerConfig.withFieldNameMapper(JsonCodecMaker.enforceCamelCase))"
 //    doc += "\n"
 //    doc += "  def apply(" + this.parameters.filter(p => p.required || (!p.required && p.scope == "uri")).
 //      map(p => s"${p.parameterName}:${p.toObjectParam}").toList.mkString(", ") + s"):$scalaRequest = {\n"
@@ -554,7 +559,7 @@ case class APIEntry(
 //    doc += "    }\n"
 //    doc += "  // Custom Code On\n"
 //    doc += "  // Custom Code Off\n"
-//    doc += "}\n"
+    doc += "}\n"
 //    doc += "\n"
 
     doc.toList

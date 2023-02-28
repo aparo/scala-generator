@@ -1,0 +1,41 @@
+{
+  "name": "dis_max",
+  "className": "DisMaxQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "queries",
+      "type": "Query",
+      "multiple": true,
+      "required": true,
+      "codeName": "queries",
+      "description": "a list of queries"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "tie_breaker",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "tieBreaker",
+      "default": 0.0,
+      "description": "the tie break value"
+    },
+    {
+      "name": "_name",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "_name",
+      "description": "the name for the query"
+    }
+  ],
+  "documentation": ""
+}

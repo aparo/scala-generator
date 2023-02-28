@@ -1,0 +1,80 @@
+{
+  "name": "geo_distance",
+  "className": "geoDistAggRange",
+  "parent": "",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "field",
+      "description": "the field to be used"
+    },
+    {
+      "name": "unit",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "unit",
+      "description": ""
+    },
+    {
+      "name": "distance_type",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "distanceType",
+      "description": ""
+    },
+    {
+      "name": "point",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "point",
+      "description": ""
+    },
+    {
+      "name": "ranges",
+      "type": "geoDistAggRange",
+      "multiple": true,
+      "required": true,
+      "codeName": "ranges",
+      "description": ""
+    },
+    {
+      "name": "sub_aggregations",
+      "type": "map[string]Aggregation",
+      "multiple": false,
+      "required": true,
+      "codeName": "subAggregations",
+      "description": ""
+    },
+    {
+      "name": "key",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "Key",
+      "description": ""
+    },
+    {
+      "name": "from",
+      "type": "jvalue",
+      "multiple": false,
+      "required": true,
+      "codeName": "From",
+      "description": ""
+    },
+    {
+      "name": "to",
+      "type": "jvalue",
+      "multiple": false,
+      "required": true,
+      "codeName": "To",
+      "description": ""
+    }
+  ],
+  "documentation": ""
+}

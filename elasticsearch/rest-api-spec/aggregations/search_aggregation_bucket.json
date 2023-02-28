@@ -1,0 +1,72 @@
+{
+  "name": "search_aggregation_bucket",
+  "className": "searchAggregationBucket",
+  "parent": "",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "field",
+      "description": "the field to be used"
+    },
+    {
+      "name": "raw",
+      "type": "json.RawMessage",
+      "multiple": false,
+      "required": true,
+      "codeName": "raw",
+      "description": ""
+    },
+    {
+      "name": "aggregations",
+      "type": "map[string]json.RawMessage",
+      "multiple": false,
+      "required": true,
+      "codeName": "aggregations",
+      "description": ""
+    },
+    {
+      "name": "values",
+      "type": "jobject",
+      "multiple": false,
+      "required": true,
+      "codeName": "Values",
+      "description": "a list of values to be used"
+    },
+    {
+      "name": "values",
+      "type": "jobject",
+      "multiple": false,
+      "required": true,
+      "codeName": "Values",
+      "description": "a list of values to be used"
+    },
+    {
+      "name": "}",
+      "type": "`json:\"top_left\"`",
+      "multiple": false,
+      "required": true,
+      "codeName": "}",
+      "description": ""
+    },
+    {
+      "name": "}",
+      "type": "`json:\"bottom_right\"`",
+      "multiple": false,
+      "required": true,
+      "codeName": "}",
+      "description": ""
+    },
+    {
+      "name": "}",
+      "type": "`json:\"bounds\"`",
+      "multiple": false,
+      "required": true,
+      "codeName": "}",
+      "description": ""
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-metrics-geobounds-aggregation.html"
+}

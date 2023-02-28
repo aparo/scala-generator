@@ -29,11 +29,15 @@ sealed trait AbstractParameter {
 
   def getType: String = `type` match {
     case s: String if multiple => "Seq[String]"
+    case "boolean|long"                                        => "Long"
+    case "number|string"                                        => "String"
     case "boolean"                                        => "Boolean"
     case "list"                                           => "Seq[String]"
     case "string" | "text" | "enum" | "time" | "duration" => "String"
     case "int"                                            => "Int"
     case "integer"                                        => "Int"
+    case "double"                                        => "Double"
+    case "date"                                        => "java.time.LocalDate"
     case "long"                                           => "Long"
     case "number" =>
       subtype match {
@@ -41,6 +45,7 @@ sealed trait AbstractParameter {
           value match {
             case "long" => "Long"
             case "int"  => "Integer"
+            case "integer"  => "Integer"
           }
         case None =>
           "Double"

@@ -1,0 +1,32 @@
+{
+  "name": "sampler",
+  "className": "SamplerAggregation",
+  "parent": "",
+  "members": [
+    {
+      "name": "sub_aggregations",
+      "type": "map[string]Aggregation",
+      "multiple": false,
+      "required": true,
+      "codeName": "subAggregations",
+      "description": ""
+    },
+    {
+      "name": "size",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "size",
+      "description": ""
+    },
+    {
+      "name": "shard_size",
+      "type": "integer",
+      "multiple": false,
+      "required": true,
+      "codeName": "shardSize",
+      "description": ""
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-bucket-terms-aggregation.html"
+}

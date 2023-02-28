@@ -1,0 +1,16 @@
+{
+  "name": "children",
+  "className": "Children",
+  "parent": "",
+  "members": [
+    {
+      "name": "type",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "childType",
+      "description": "Type of children"
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-metrics-cardinality-aggregation.html"
+}

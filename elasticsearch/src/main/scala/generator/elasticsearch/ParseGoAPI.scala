@@ -2,8 +2,6 @@
  * Copyright 2018-2022 Alberto Paro on Apache 2 License. All Rights Reserved.
  */
 
-///* Copyright 2017 - Wimobilize Pte Ltd.  All Rights Reserved. */
-//package morpheus.dev.commands
 //
 //import java.io.File
 //import javax.inject.{Inject, Singleton}
@@ -178,7 +176,7 @@
 //
 //    lines.foreach {
 //      case s: String if s.contains("reference/current") =>
-//        documentation = "http://doc.bdt.technology/elasticsearch/guide/reference/master" + s.substring(s.indexOf("reference/current") + "reference/current".length)
+//        documentation = "http://www.elastic.com/elasticsearch/guide/reference/master" + s.substring(s.indexOf("reference/current") + "reference/current".length)
 //      case typeExt(name) =>
 //        inStruct = true
 //        recordName = name

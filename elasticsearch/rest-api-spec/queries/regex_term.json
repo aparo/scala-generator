@@ -1,0 +1,43 @@
+{
+  "name": "regex_term",
+  "className": "RegexTermQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "value",
+      "description": "the field to be used"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "inField": true,
+      "codeName": "value",
+      "description": "the value to be used"
+    },
+    {
+      "name": "ignorecase",
+      "type": "bool",
+      "multiple": false,
+      "required": true,
+      "inField": true,
+      "codeName": "ignorecase",
+      "default": false,
+      "description": "ignore case"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    }
+  ],
+  "documentation": ""
+}

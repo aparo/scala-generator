@@ -1,0 +1,64 @@
+{
+  "name": "geo_shape",
+  "className": "GeoShapeMapping",
+  "parent": "_commons",
+  "members": [
+    {
+      "name": "tree",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "tree_levels",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "precision",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "distance_error_pct",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "orientation",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "strategy",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "coerce",
+      "type": "boolean",
+      "multiple": false,
+      "required": false,
+      "description": ""
+    },
+    {
+      "name": "points_only",
+      "type": "boolean",
+      "multiple": false,
+      "required": false,
+      "description": ""
+    }
+  ],
+  "documentation": ""
+}

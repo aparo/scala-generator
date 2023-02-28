@@ -16,9 +16,10 @@ object DevConfig {
       restAPIPathSource <- zio.System.env("ELASTICSEARCH_REST_API_PATH")
       scalaAPIDest <- zio.System.env("ELASTICSEARCH_SCALA_API_PATH")
     } yield DevConfig(
-      esSource.map(v => os.Path(v)).getOrElse(os.home / "sources" / "elasticsearch" / "elasticsearch"),
+      esSource.map(v => os.Path(v)).getOrElse(os.home / "projects"/ "github" / "elasticsearch" / "elasticsearch"),
       restAPIPathSource.map(v => os.Path(v)).getOrElse(os.pwd / "elasticsearch" / "rest-api-spec"),
-      scalaAPIDest.map(v => os.Path(v)).getOrElse(os.home / "projects" / "zio-elasticsearch"),
+      scalaAPIDest.map(v => os.Path(v)).getOrElse(os.pwd / "zio-elasticsearch"),
+//      scalaAPIDest.map(v => os.Path(v)).getOrElse(os.home / "projects" / "zio-elasticsearch"),
     )
 
 }

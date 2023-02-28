@@ -1,0 +1,39 @@
+{
+  "name": "keyword",
+  "className": "KeywordMapping",
+  "parent": "_commons",
+  "members": [
+    {
+      "name": "null_value",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "nullValue",
+      "description": "The value is the field is null"
+    },
+    {
+      "name": "norms",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "default": false,
+      "skip_default": true,
+      "description": "Use norms"
+    },
+    {
+      "name": "ignore_above",
+      "type": "int",
+      "multiple": false,
+      "required": false,
+      "description": "Ignore above a defined size"
+    },
+    {
+      "name": "eager_global_ordinals",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "description": "Use eager global ordinals"
+    }
+  ],
+  "documentation": ""
+}

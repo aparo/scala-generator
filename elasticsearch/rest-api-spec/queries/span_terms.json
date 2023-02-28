@@ -1,0 +1,42 @@
+{
+  "name": "span_terms",
+  "className": "SpanTermsQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "field",
+      "description": "the field to be used"
+    },
+    {
+      "name": "values",
+      "type": "string",
+      "multiple": true,
+      "required": true,
+      "inField": true,
+      "codeName": "value",
+      "description": "the value to be used"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "inField": true,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "_name",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "_name",
+      "description": "the name of the query"
+    }
+  ],
+  "documentation": ""
+}

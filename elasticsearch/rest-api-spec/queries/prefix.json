@@ -1,0 +1,49 @@
+{
+  "name": "prefix",
+  "className": "PrefixQuery",
+  "parent": "Query",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "field",
+      "description": "the field to be used"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "prefix",
+      "inField": true,
+      "description": "the prefix value"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "rewrite",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "rewrite",
+      "description": ""
+    },
+    {
+      "name": "_name",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "_name",
+      "description": "the name for the query"
+    }
+  ],
+  "documentation": ""
+}

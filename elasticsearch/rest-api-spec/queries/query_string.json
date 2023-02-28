@@ -1,0 +1,208 @@
+{
+  "name": "query_string",
+  "className": "QueryStringQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "query",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "queryString",
+      "description": "a query to be used"
+    },
+    {
+      "name": "default_field",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "defaultField",
+      "description": "The default fields"
+    },
+    {
+      "name": "default_operator",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "defaultOperator",
+      "description": "The default operator"
+    },
+    {
+      "name": "analyzer",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "analyzer",
+      "description": "The analyzer to use for the query string"
+    },
+    {
+      "name": "quote_analyzer",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "quoteAnalyzer",
+      "description": ""
+    },
+    {
+      "name": "quote_field_suffix",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "quoteFieldSuffix",
+      "description": ""
+    },
+    {
+      "name": "auto_generate_phrase_queries",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "autoGeneratePhraseQueries",
+      "description": "The auto-generate phrase for query"
+    },
+    {
+      "name": "allow_leading_wildcard",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "allowLeadingWildcard",
+      "description": ""
+    },
+    {
+      "name": "lowercase_expanded_terms",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "lowercaseExpandedTerms",
+      "description": "Specify whether query terms should be lowercased"
+    },
+    {
+      "name": "enable_position_increments",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "enablePositionIncrements",
+      "description": "If true position increments is enabled"
+    },
+    {
+      "name": "analyze_wildcard",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "analyzeWildcard",
+      "description": "The analyzer for the query string query"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "fuzzy_prefix_length",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "fuzzyPrefixLength",
+      "description": ""
+    },
+    {
+      "name": "fuzzy_max_expansions",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "fuzzyMaxExpansions",
+      "description": "Max value for fuzzy expansions"
+    },
+    {
+      "name": "fuzzy_rewrite",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "fuzzyRewrite",
+      "description": ""
+    },
+    {
+      "name": "phrase_slop",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "phraseSlop",
+      "description": ""
+    },
+    {
+      "name": "fields",
+      "type": "string",
+      "multiple": true,
+      "required": true,
+      "codeName": "fields",
+      "description": "the fields to be used"
+    },
+    {
+      "name": "field_boosts",
+      "type": "map[string]*float32",
+      "multiple": false,
+      "required": true,
+      "codeName": "fieldBoosts",
+      "description": ""
+    },
+    {
+      "name": "use_dis_max",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "useDisMax",
+      "description": ""
+    },
+    {
+      "name": "tie_breaker",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "tieBreaker",
+      "description": "the tie break value"
+    },
+    {
+      "name": "rewrite",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "rewrite",
+      "description": ""
+    },
+    {
+      "name": "minimum_should_match",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "minimumShouldMatch",
+      "description": "mininum number of subqueries to match"
+    },
+    {
+      "name": "lenient",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "lenient",
+      "description": "Specify whether format-based query failures (such as providing text to a numeric field) should be ignored"
+    },
+    {
+      "name": "_name",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "_name",
+      "description": "The name of the query"
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "locale",
+      "description": "The locale language"
+    }
+  ],
+  "documentation": ""
+}

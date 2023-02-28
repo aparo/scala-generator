@@ -1,0 +1,40 @@
+{
+  "name": "boosting",
+  "className": "BoostingQuery",
+  "parent": "Query",
+  "members": [
+    {
+      "name": "positive",
+      "type": "Query",
+      "multiple": false,
+      "required": true,
+      "codeName": "positiveQuery",
+      "description": "the positive query to be used"
+    },
+    {
+      "name": "negative",
+      "type": "Query",
+      "multiple": false,
+      "required": true,
+      "codeName": "negativeQuery",
+      "description": "the negative query to be used"
+    },
+    {
+      "name": "negative_boost",
+      "type": "double",
+      "multiple": false,
+      "required": true,
+      "codeName": "negativeBoost",
+      "description": "the negativeboost value for the current query"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    }
+  ],
+  "documentation": ""
+}

@@ -1,0 +1,48 @@
+{
+  "name": "constant_score_query",
+  "className": "ConstantScoreQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "query",
+      "type": "Query",
+      "multiple": false,
+      "required": false,
+      "codeName": "query",
+      "description": "the query to be used"
+    },
+    {
+      "name": "filter",
+      "type": "Filter",
+      "multiple": false,
+      "required": false,
+      "codeName": "filter",
+      "description": "the filter to be used"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "_cache",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "_cache",
+      "description": "if the filter should be cached"
+    },
+    {
+      "name": "_cache_key",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "_cacheKey",
+      "description": "the key name for the cache"
+    }
+  ],
+  "documentation": ""
+}

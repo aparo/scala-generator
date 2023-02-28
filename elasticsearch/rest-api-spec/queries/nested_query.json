@@ -1,0 +1,57 @@
+{
+  "name": "nested_query",
+  "className": "NestedQuery",
+  "parent": "",
+  "members": [
+    {
+      "name": "path",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "path",
+      "description": "The path"
+    },
+    {
+      "name": "query",
+      "type": "Query",
+      "multiple": false,
+      "required": true,
+      "codeName": "query",
+      "description": "a query to be used"
+    },
+    {
+      "name": "filter",
+      "type": "Filter",
+      "multiple": false,
+      "required": false,
+      "codeName": "filter",
+      "description": "The filter"
+    },
+    {
+      "name": "score_mode",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "scoreMode",
+      "default": "avg",
+      "description": "The score mode"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "_name",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "_name",
+      "description": "the name of the query"
+    }
+  ],
+  "documentation": ""
+}

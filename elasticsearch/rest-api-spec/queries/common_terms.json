@@ -1,0 +1,122 @@
+{
+  "name": "common_terms",
+  "className": "CommonTermsQuery",
+  "parent": "Query",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "text",
+      "description": "a query to be used"
+    },
+    {
+      "name": "query",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "text",
+      "inField": true,
+      "description": "a query to be used"
+    },
+    {
+      "name": "disable_coords",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "disableCoords",
+      "inField": true,
+      "description": "disable the coord for the current query"
+    },
+    {
+      "name": "high_freq_operator",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "highFreqOperator",
+      "options": [
+        "AND",
+        "OR"
+      ],
+      "inField": true,
+      "description": "'AND' or 'OR' operator"
+    },
+    {
+      "name": "low_freq_operator",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "lowFreqOperator",
+      "inField": true,
+      "options": [
+        "AND",
+        "OR"
+      ],
+      "description": "'AND' or 'OR' operator"
+    },
+    {
+      "name": "analyzer",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "analyzer",
+      "inField": true,
+      "description": "The analyzer to use for the query string"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "inField": true,
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "cutoff_frequency",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "cutoffFrequency",
+      "inField": true,
+      "description": ""
+    },
+    {
+      "name": "minimum_should_match",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "inField": true,
+      "codeName": "minimumShouldMatch",
+      "description": ""
+    },
+    {
+      "name": "low_freq",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "inField": true,
+      "codeName": "lowFreqMinimumShouldMatch",
+      "description": "the low frequency to be used"
+    },
+    {
+      "name": "high_freq",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "inField": true,
+      "codeName": "highFreqMinimumShouldMatch",
+      "description": "the high frequency to be used"
+    },
+    {
+      "name": "_name",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "queryName",
+      "description": "the name for the query"
+    }
+  ],
+  "documentation": ""
+}

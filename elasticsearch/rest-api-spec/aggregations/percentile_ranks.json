@@ -1,0 +1,72 @@
+{
+  "name": "percentile_ranks",
+  "className": "PercentileRanksAggregation",
+  "parent": "",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "field",
+      "description": "the field to be used"
+    },
+    {
+      "name": "script",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "script",
+      "description": "the script to be executed"
+    },
+    {
+      "name": "lang",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "lang",
+      "description": "the scripting language"
+    },
+    {
+      "name": "params",
+      "type": "jobject",
+      "multiple": false,
+      "required": true,
+      "codeName": "params",
+      "description": "additional parameters to be passed to a script"
+    },
+    {
+      "name": "sub_aggregations",
+      "type": "map[string]Aggregation",
+      "multiple": false,
+      "required": true,
+      "codeName": "subAggregations",
+      "description": ""
+    },
+    {
+      "name": "values",
+      "type": "double",
+      "multiple": true,
+      "required": true,
+      "codeName": "values",
+      "description": "a list of values to be used"
+    },
+    {
+      "name": "compression",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "compression",
+      "description": ""
+    },
+    {
+      "name": "estimator",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "estimator",
+      "description": ""
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-metrics-percentile-rank-aggregation.html"
+}

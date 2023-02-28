@@ -1,0 +1,152 @@
+{
+  "name": "date_histogram",
+  "className": "DateHistogramAggregation",
+  "parent": "",
+  "members": [
+    {
+      "name": "field",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "field",
+      "description": "the field to be used"
+    },
+    {
+      "name": "script",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "script",
+      "description": "the script to be executed"
+    },
+    {
+      "name": "lang",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "lang",
+      "description": "the scripting language"
+    },
+    {
+      "name": "params",
+      "type": "jobject",
+      "multiple": false,
+      "required": true,
+      "codeName": "params",
+      "description": "additional parameters to be passed to a script"
+    },
+    {
+      "name": "sub_aggregations",
+      "type": "map[string]Aggregation",
+      "multiple": false,
+      "required": true,
+      "codeName": "subAggregations",
+      "description": ""
+    },
+    {
+      "name": "interval",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "interval",
+      "description": ""
+    },
+    {
+      "name": "order",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "order",
+      "description": ""
+    },
+    {
+      "name": "order_asc",
+      "type": "bool",
+      "multiple": false,
+      "required": true,
+      "codeName": "orderAsc",
+      "description": ""
+    },
+    {
+      "name": "min_doc_count",
+      "type": "long",
+      "multiple": false,
+      "required": false,
+      "codeName": "minDocCount",
+      "description": ""
+    },
+    {
+      "name": "extended_bounds_min",
+      "type": "jvalue",
+      "multiple": false,
+      "required": true,
+      "codeName": "extendedBoundsMin",
+      "description": ""
+    },
+    {
+      "name": "extended_bounds_max",
+      "type": "jvalue",
+      "multiple": false,
+      "required": true,
+      "codeName": "extendedBoundsMax",
+      "description": ""
+    },
+    {
+      "name": "pre_zone",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "preZone",
+      "description": ""
+    },
+    {
+      "name": "post_zone",
+      "type": "string",
+      "multiple": false,
+      "required": true,
+      "codeName": "postZone",
+      "description": ""
+    },
+    {
+      "name": "pre_zone_adjust_large_interval",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "preZoneAdjustLargeInterval",
+      "description": ""
+    },
+    {
+      "name": "format",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "format",
+      "description": ""
+    },
+    {
+      "name": "pre_offset",
+      "type": "long",
+      "multiple": false,
+      "required": true,
+      "codeName": "preOffset",
+      "description": ""
+    },
+    {
+      "name": "post_offset",
+      "type": "long",
+      "multiple": false,
+      "required": true,
+      "codeName": "postOffset",
+      "description": ""
+    },
+    {
+      "name": "factor",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "factor",
+      "description": ""
+    }
+  ],
+  "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-bucket-datehistogram-aggregation.html"
+}

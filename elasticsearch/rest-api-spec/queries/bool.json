@@ -1,0 +1,72 @@
+{
+  "name": "bool",
+  "className": "BoolQuery",
+  "parent": "Query",
+  "members": [
+    {
+      "name": "must",
+      "type": "Query",
+      "multiple": true,
+      "required": false,
+      "codeName": "must",
+      "description": "a list of query that must be verified"
+    },
+    {
+      "name": "should",
+      "type": "Query",
+      "multiple": true,
+      "required": false,
+      "codeName": "should",
+      "description": "a list of query that should be verified"
+    },
+    {
+      "name": "must_not",
+      "type": "Query",
+      "multiple": true,
+      "required": false,
+      "codeName": "mustNot",
+      "description": "a list of query that must not be verified"
+    },
+    {
+      "name": "boost",
+      "type": "double",
+      "multiple": false,
+      "required": false,
+      "codeName": "boost",
+      "description": "the boost value for the current query"
+    },
+    {
+      "name": "disable_coord",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "disableCoord",
+      "description": "disable the coord for the current query"
+    },
+    {
+      "name": "minimum_should_match",
+      "type": "integer",
+      "multiple": false,
+      "required": false,
+      "codeName": "minimumShouldMatch",
+      "description": "mininum number of subqueries to match"
+    },
+    {
+      "name": "adjust_pure_negative",
+      "type": "bool",
+      "multiple": false,
+      "required": false,
+      "codeName": "adjustPureNegative",
+      "description": "adjust score for pure negative values"
+    },
+    {
+      "name": "_name",
+      "type": "string",
+      "multiple": false,
+      "required": false,
+      "codeName": "_name",
+      "description": "the name for the query"
+    }
+  ],
+  "documentation": ""
+}
