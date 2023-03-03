@@ -4,8 +4,6 @@
 
 package generator.elasticsearch.klass.query
 
-import java.io.File
-
 import generator.elasticsearch.klass.{BaseRenderTemplate, ClassDef}
 import generator.elasticsearch.{APIUtils, DevConfig}
 

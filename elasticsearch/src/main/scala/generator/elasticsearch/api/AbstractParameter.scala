@@ -5,9 +5,9 @@
 package generator.elasticsearch.api
 
 import scala.collection.mutable.ListBuffer
-import zio.json.JsoniterScalaCodec.*
-import com.github.plokhotnyuk.jsoniter_scala.core.*
-import com.github.plokhotnyuk.jsoniter_scala.macros.*
+import zio.json.JsoniterScalaCodec._
+import com.github.plokhotnyuk.jsoniter_scala.core._
+import com.github.plokhotnyuk.jsoniter_scala.macros._
 import zio.json.ast.Json
 
 sealed trait AbstractParameter {

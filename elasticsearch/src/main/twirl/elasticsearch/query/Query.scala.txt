@@ -1,4 +1,4 @@
-@(qf: generator.elasticsearch.klass.query.QueryClassDef)/* Copyright 2017 - Wimobilize Pte Ltd.  All Rights Reserved. */
+@(qf: generator.elasticsearch.klass.query.QueryClassDef)
 package zio.elasticsearch.queries
 
 @(qf.scalaExtraImports)

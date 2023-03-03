@@ -6,8 +6,6 @@ package generator
 
 import java.io._
 import java.nio.file.Paths
-import java.security.AccessController
-import java.util.zip.GZIPInputStream
 
 import scala.io.Source._
 import scala.io.{Codec, Source}
@@ -17,7 +15,8 @@ object FileUtils {
 
   /** A wrapper around file, allowing iteration either on direct children or on directory tree
     */
-  extension (file: File) {
+//  extension (file: File) {
+  implicit class RichFile(file: File) {
 
     def children = new Iterable[File] {
       def iterator = if (file.isDirectory) file.listFiles.iterator else Iterator.empty
@@ -64,7 +63,7 @@ object FileUtils {
 //    readResource(name, encoding)(v => io.circe.parser.parse(v))
 //  }
 
-  given codec: Codec = Codec.UTF8
+  implicit val codec: Codec = Codec.UTF8
 
   def readUtf8(filename: String): String = Source.fromFile(filename).getLines().mkString
 

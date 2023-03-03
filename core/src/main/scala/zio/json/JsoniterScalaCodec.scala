@@ -1,6 +1,6 @@
 package zio.json
 
-import com.github.plokhotnyuk.jsoniter_scala.core.*
+import com.github.plokhotnyuk.jsoniter_scala.core._
 import zio.Chunk
 import zio.json.ast._
 

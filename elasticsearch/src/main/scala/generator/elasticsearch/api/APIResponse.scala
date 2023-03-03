@@ -4,10 +4,10 @@
 
 package generator.elasticsearch.api
 
-import com.github.plokhotnyuk.jsoniter_scala.core.*
-import com.github.plokhotnyuk.jsoniter_scala.macros.*
+import com.github.plokhotnyuk.jsoniter_scala.core._
 import zio.json.ast.Json
 import zio.json.JsoniterScalaCodec._
+import com.github.plokhotnyuk.jsoniter_scala.macros._
 
 final case class APIResponse(
     params:  Map[String, Parameter] = Map.empty[String, Parameter],

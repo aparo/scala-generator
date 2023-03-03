@@ -9,7 +9,8 @@ autoStartServer := false
 Global / excludeLintKeys += autoStartServer
 
 // bloop hasn't upgraded to scala-xml 2 yet
-ThisBuild / libraryDependencySchemes ++= Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always)
+ThisBuild / libraryDependencySchemes ++= Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
+  "com.lihaoyi" %% "geny" % VersionScheme.Always)
 
 lazy val core = project
   .configure(baseSettings, optimize)
@@ -17,6 +18,7 @@ lazy val core = project
     libraryDependencies ++= Seq(
       Deps.javaDiff,
       // Deps.scalaFmt,
+      Deps.fastparse,
       Deps.jsoniterScala,
       Deps.jsoniterScalaMacros,
       Deps.osLib,
@@ -58,7 +60,7 @@ lazy val generator = project
       Deps.scopt,
       // Deps.ammoniteOps,
       Deps.osLib,
-      Deps.ts,
+//      Deps.ts,
       Deps.scalatest % Test,
       Deps.zioTest,
       Deps.zioTestSbt,
@@ -106,6 +108,7 @@ lazy val baseSettings: Project => Project =
         url("https://github.com/aparo"),
       ),
     ),
+    // scalaVersion := "3.2.2",
     scalaVersion := "2.13.10",
     scalacOptions ~= (_.filterNot(Set("-Ywarn-unused:imports", "-Ywarn-unused:params", "-Xfatal-warnings"))),
     /* disable scaladoc */

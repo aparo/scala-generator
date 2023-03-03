@@ -7,12 +7,9 @@ package generator.elasticsearch.klass
 import generator.elasticsearch.DevConfig
 
 import scala.collection.mutable
-import os.Path
 
 class ElasticSearchGenerator(val devConfig: DevConfig, val pathScope: String, val renderTemplate: BaseRenderTemplate)
     extends BaseGeneratorTrait {
-
-  import generator.FileUtils._
 
   val root    = devConfig.devRestAPIPath
   val destDir = devConfig.devScalaAPIDestPath
