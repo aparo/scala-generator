@@ -17,6 +17,7 @@ lazy val core = project
   .settings(
     libraryDependencies ++= Seq(
       Deps.javaDiff,
+      Deps.ts,
       // Deps.scalaFmt,
       Deps.fastparse,
       Deps.jsoniterScala,
@@ -40,6 +41,19 @@ lazy val elasticsearch = project
       Deps.jsoniterScalaMacros,
       // Deps.ammoniteOps,
       // Deps.ts,
+      Deps.scalatest % Test,
+      Deps.zioTest,
+      Deps.zioTestSbt,
+    ),
+  )
+  .dependsOn(core)
+
+lazy val `elasticsearch-generated` = project
+  .configure(baseSettings, optimize)
+  .settings(
+    libraryDependencies ++= Seq(
+      Deps.zioJson,
+      Deps.zioStreams,
       Deps.scalatest % Test,
       Deps.zioTest,
       Deps.zioTestSbt,
@@ -109,7 +123,7 @@ lazy val baseSettings: Project => Project =
       ),
     ),
     // scalaVersion := "3.2.2",
-    scalaVersion := "2.13.10",
+    scalaVersion := "2.12.10",
     scalacOptions ~= (_.filterNot(Set("-Ywarn-unused:imports", "-Ywarn-unused:params", "-Xfatal-warnings"))),
     /* disable scaladoc */
     Compile / doc / sources := Nil,

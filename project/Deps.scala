@@ -4,7 +4,7 @@ object Deps {
   val ammoniteOps = "com.lihaoyi" %% "ammonite-ops" % "2.4.1"
   val osLib       = "com.lihaoyi" %% "os-lib" % "0.9.0"
   val guava       = "com.google.guava" % "guava" % "23.0"
-  val ts          = "org.scalablytyped.converter" %% "ts" % "1.0.0-beta40"
+  val ts          = "org.scalablytyped.converter" %% "ts" % "1.0.0-beta41"
   val scalatest   = "org.scalatest" %% "scalatest" % "3.2.15"
   val scopt       = "com.github.scopt" %% "scopt" % "4.1.0"
   val fastparse = "com.lihaoyi" %% "fastparse" % "2.3.3"

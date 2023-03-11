@@ -1,9 +1,7 @@
 package generator.elasticsearch
 
 import com.google.common.base.CaseFormat
-import fastparse.Parsed
 import os._
-import tsparse.Parser
 
 import scala.collection.mutable.ListBuffer
 
