@@ -1,4 +1,4 @@
-package io.megl.generator.ts
+package generator.ts
 
 import org.scalablytyped.converter.internal.ts._
 import org.scalablytyped.converter.internal._
@@ -10,16 +10,16 @@ class ParserContext() {
   val scalaClasses = new mutable.HashMap[String, ScalaClass]()
   val MAP_CLASSES: Map[String, String] = Map("string" -> "String", "Dictionary" -> "Map")
 
-  def parse(namespace:String, tsFile: TsParsedFile): Unit = {
+  def parse(filename:InFile, namespace:String, tsFile: TsParsedFile): Unit = {
     tsFile.members.foreach { entity =>
-      parse(namespace, entity)
+      parse(namespace, entity)(filename)
     }
     ()
   }
 
-  def parse(namespace:String, entity: TsContainerOrDecl): Unit =
+  def parse(namespace:String, entity: TsContainerOrDecl)(implicit inFile: InFile): Unit =
     entity match {
-      case t: TsParsedFile => parse(namespace:String, t)
+      case t: TsParsedFile => parse(inFile, namespace, t)
       case TsDeclNamespace(comments, declared, name, members, codePath, jsLocation) =>
       case TsDeclModule(comments, declared, name, members, codePath, jsLocation) =>
       case TsAugmentedModule(comments, name, members, codePath, jsLocation) =>
@@ -27,7 +27,9 @@ class ParserContext() {
       case t: TsDeclClass =>
         val c = parse(namespace, t)
         scalaClasses += s"$namespace.${c.name}" -> c
-      case TsDeclInterface(comments, declared, name, tparams, inheritance, members, codePath) =>
+      case t:TsDeclInterface =>
+        val c = parse(namespace, t)
+        scalaClasses += s"$namespace.${c.name}" -> c
       case t: TsDeclEnum => parse(t)
       case TsDeclVar(comments, declared, readOnly, name, tpe, expr, jsLocation, codePath) =>
       case TsDeclFunction(comments, declared, name, signature, jsLocation, codePath) =>
@@ -44,7 +46,23 @@ class ParserContext() {
       case TsExportAsNamespace(ident) =>
     }
 
-  def parse(namespace:String, ts: TsDeclClass): ScalaClass = {
+  def parse(namespace: String, ts: TsDeclInterface)(implicit inFile: InFile): ScalaClass = {
+    val allMembers = ts.members.toList.map(parse)
+    var name = ts.name.value
+
+    ScalaClass(
+      namespace = namespace,
+      name = name,
+      typeParams = ts.tparams.toList.map(parse),
+      comments = ts.comments,
+      isAbstract = true,
+      implements = ts.inheritance.toList.map(parseTsTypeRef),
+      members = allMembers.collect { case t: ScalaClassMember => t },
+      codePath = ts.codePath
+    )
+  }
+
+  def parse(namespace:String, ts: TsDeclClass)(implicit inFile: InFile): ScalaClass = {
     // comments,
     // declared,
     // isAbstract,
@@ -56,17 +74,20 @@ class ParserContext() {
     // jsLocation,
     // codePath,
     val allMembers = ts.members.toList.map(parse)
+    var name=ts.name.value
+    if(name=="Request") name=inFile.path.last.replace(".ts", "")
+    if(name=="Response") name=inFile.path.last.replace(".ts", "")
 
     ScalaClass(
       namespace=namespace,
-      name = ts.name.value,
+      name = name,
       typeParams = ts.tparams.toList.map(parse),
       comments = ts.comments,
       isAbstract = ts.isAbstract,
       parent = ts.parent.map(parseTsTypeRef),
       implements = ts.implements.toList.map(parseTsTypeRef),
       members = allMembers.collect { case t: ScalaClassMember => t },
-      jsLocation = ts.jsLocation,
+      jsLocation = Some(ts.jsLocation),
       codePath = ts.codePath,
     )
   }
@@ -75,7 +96,9 @@ class ParserContext() {
     member match {
       case TsMemberFunction(comments, level, name, methodType, signature, isStatic, isReadOnly) => ???
       case TsMemberCall(comments, level, signature) => ???
-      case TsMemberIndex(comments, isReadOnly, level, indexing, valueType) => ???
+      case TsMemberIndex(comments, isReadOnly, level, indexing, valueType) =>
+//        val optType=valueType.map(parse)
+???
       case TsMemberProperty(comments, level, name, tpe, expr, isStatic, isReadOnly) =>
         val optType=tpe.map(parse)
         ScalaClassMember(

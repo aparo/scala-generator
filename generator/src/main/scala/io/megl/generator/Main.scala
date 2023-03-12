@@ -1,13 +1,13 @@
  package io.megl.generator
 
  import ammonite.ops._
- import io.megl.generator.ts.ParserContext
+ import generator.ts.ParserContext
  import org.scalablytyped.converter.internal._
  import org.scalablytyped.converter.internal.ts.parser._
 
  import scala.collection.mutable.ListBuffer
  object Main extends App {
-   val specification = os.home / "projects" / "github" / "elasticsearch" / "elasticsearch-specification" / "specification"
+   val specification = os.home / "projects" / "github" / "elasticsearch" / "elasticsearch-specification" / "specification" /"ingest" / "delete_pipeline"
 val targetDir = (os.pwd / "elasticsearch-generated"/ "src"/ "main" / "scala")
    os.makeDir.all(targetDir)
     implicit val parserContext=new ParserContext()
@@ -26,26 +26,27 @@ val targetDir = (os.pwd / "elasticsearch-generated"/ "src"/ "main" / "scala")
          infile =>
 //             println(infile.toString)
              val res=parseFile(infile)
-              val namespace=infile.path.toString().split('\\')
+              var namespace=infile.path.segments.toList
                 .dropWhile(_ != "specification").drop(1).head
+              if(infile.path.segments.toList.last.endsWith("Request.ts")) namespace=namespace+".requests"
+           if(infile.path.segments.toList.last.endsWith("Response.ts")) namespace=namespace+".responses"
              res match {
                  case Left(value) =>
                      println(value)
                  case Right(value) =>
 //                     println(value)
-                   parserContext.parse(namespace, value)
+                   parserContext.parse(infile, namespace, value)
              }
 
      }
 
-   import io.megl.generator.ts.Converters._
    parserContext.scalaClasses
      .map(_._2.toCode)
      .groupBy(_.filename)
      .foreach{
        case (filename, codes) =>
          var targetFileDir=targetDir
-         var finalName:String="zio/"+filename.getOrElse("common/common.scala")
+         var finalName:String="zio/"+filename.getOrElse("common/common.scala").replace(".", "/").replace("/scala", ".scala")
          val packg= finalName.split("/").dropRight(1).mkString(".")
          finalName.split('/').foreach{
            value =>

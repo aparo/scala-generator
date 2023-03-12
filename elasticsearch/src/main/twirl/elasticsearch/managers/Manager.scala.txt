@@ -1,14 +1,17 @@
-@(namespace:String, importList: List[String], name:String, methods:String)
-package @{namespace}.managers
+@(namespace:String, importList: List[String], name:String, classname:String, methods:String)
+package @{namespace}.@{name}
 
 import zio.elasticsearch._
 import zio.json._
 import com.github.plokhotnyuk.jsoniter_scala.core._
 import com.github.plokhotnyuk.jsoniter_scala.macros._
+import zio._
+import zio.exception._
+
 @for(action <- importList) {import @action
 }
 
-class @(name.capitalize)Manager(client: ElasticSearch) {
+class @(classname)Manager(client: ElasticSearch) {
 
   @methods
 }

@@ -9,3 +9,4 @@ release-temp/
 .bsp/
 .vscode
 metals.sbt
+zio-elasticsearch/

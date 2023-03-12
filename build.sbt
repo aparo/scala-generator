@@ -48,11 +48,15 @@ lazy val elasticsearch = project
   )
   .dependsOn(core)
 
-lazy val `elasticsearch-generated` = project
+lazy val `zio-elasticsearch` = project
   .configure(baseSettings, optimize)
   .settings(
     libraryDependencies ++= Seq(
       Deps.zioJson,
+      Deps.zioJsonExtra,
+      Deps.zioJsonException,
+      Deps.jsoniterScala,
+      Deps.jsoniterScalaMacros,
       Deps.zioStreams,
       Deps.scalatest % Test,
       Deps.zioTest,

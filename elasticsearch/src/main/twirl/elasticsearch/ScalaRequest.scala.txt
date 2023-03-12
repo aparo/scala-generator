@@ -1,6 +1,7 @@
 @(namespace:String, importList: List[String], request:String)
-package @{namespace}.client
+package @{namespace}
 
+import zio._
 import zio.json._
 import com.github.plokhotnyuk.jsoniter_scala.core._
 import com.github.plokhotnyuk.jsoniter_scala.macros._

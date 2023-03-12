@@ -1,4 +1,4 @@
-package io.megl.generator.ts
+package generator.ts
 
 import com.google.common.base.CaseFormat
 
@@ -137,6 +137,9 @@ object Converters {
     def toCamel:String= if (str.contains("_")) {
       CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, str)
     } else str
+
+    def toCamelUpper: String =
+      CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, str)
 
     def toSnake: String =
       CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, str)

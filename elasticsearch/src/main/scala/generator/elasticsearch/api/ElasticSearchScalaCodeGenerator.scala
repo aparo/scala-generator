@@ -11,7 +11,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import os.Path
 import zio.ZIO
-
+import generator.ts.Converters._
 class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCodeGenerator {
 
   var nativeFiltering = false
@@ -112,7 +112,7 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
   def generateEnumeration()={
     println(s"Generating new files in ${destDir}")
     PathUtils.saveScalaFile(
-      (List(s"package ${Constants.namespaceName}.client") ++ extras.map(_._2)).mkString("\n\n"),
+      (List(s"package ${Constants.namespaceName}.client") ++ extras.values).mkString("\n\n"),
       destDir / "enumerations.scala",
     )
 
@@ -120,10 +120,10 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
 
   def generateManagers()={
     managers.foreach { case (name, code) =>
-      val filename = destDir / "managers" / s"${name.capitalize}Manager.scala"
+      val filename = destDir / name / s"${name.toCamelUpper}Manager.scala"
       PathUtils.saveScalaFile(
         elasticsearch.managers.txt
-          .Manager(Constants.namespaceName, managersImports.getOrElse(name, Nil).distinct.sorted, name, code)
+          .Manager(Constants.namespaceName, (managersImports.getOrElse(name, Nil)).distinct.sorted, name, name.toCamelUpper, code)
           .toString(),
         filename,
       )
@@ -132,9 +132,9 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
 
   def generateZioAccessors(zioAccessManagers: mutable.HashMap[String, String]) = {
     zioAccessManagers.foreach { case (name, code) =>
-      val filename = destDir / "managers" / s"${name.capitalize}Accessors.scala"
+      val filename = destDir / name / s"${name.toCamelUpper}Accessors.scala"
       PathUtils.saveScalaFile(
-        code.replace("%%SERVICE%%", s"${name.capitalize}Service"),
+        code.replace("%%SERVICE%%", s"${name.toCamelUpper}Service"),
         filename,
       )
     }  }
@@ -153,14 +153,14 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
       val client = apiEntry.scope
 
 //      requestResponse += apiEntry.scalaRequest -> apiEntry.scalaResponse
-      requestResponse += s"zio.elasticsearch.requests.$client.${apiEntry.scalaRequest}" -> s"zio.elasticsearch.requests.$client.${apiEntry.scalaResponse}"
+      requestResponse += s"zio.elasticsearch.$client.requests.${apiEntry.scalaRequest}" -> s"zio.elasticsearch.$client.responses.${apiEntry.scalaResponse}"
       val extra = apiEntry.extra
       val implicitsList = apiEntry.implicits
       val code = apiEntry.getClientCalls
       val zioAccessMethods = apiEntry.getClientZIOAccessorsCalls
       val imports = List(
-        s"zio.elasticsearch.requests.$client.${apiEntry.scalaRequest}",
-        s"zio.elasticsearch.requests.$client.${apiEntry.scalaResponse}",
+        s"zio.elasticsearch.$client.requests.${apiEntry.scalaRequest}",
+        s"zio.elasticsearch.$client.responses.${apiEntry.scalaResponse}",
       )
       extras ++= extra
       if (managers.contains(client)) {
@@ -198,7 +198,7 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
       case "client" =>
         destDir / "requests"
       case default =>
-        destDir / "requests" / default
+        destDir / default / "requests"
     }
     if(!os.exists(ddir))
       os.makeDir.all(ddir)
@@ -209,7 +209,7 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
       case "client" =>
         s"${Constants.namespaceName}.requests"
       case default =>
-        s"${Constants.namespaceName}.requests.$default"
+        s"${Constants.namespaceName}.$default.requests"
     }
 
     var imports = new ListBuffer[String]

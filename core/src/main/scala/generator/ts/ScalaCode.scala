@@ -1,4 +1,4 @@
-package io.megl.generator.ts
+package generator.ts
 
 import org.scalablytyped.converter.internal.ts.TsProtectionLevel
 import org.scalablytyped.converter.internal.ts._
@@ -94,6 +94,7 @@ case class ScalaClassMember(
   def isOptional:Boolean=typ.exists(_.isRequired) || name.endsWith("?")
 }
 
+
 case class ScalaClassMethod(name: String, level: TsProtectionLevel, comments: Comments) extends ScalaCode
 
 case class ScalaClass(
@@ -106,7 +107,7 @@ case class ScalaClass(
                        implements: List[ScalaType] = Nil,
                        members: List[ScalaClassMember] = Nil,
                        methods: List[ScalaClassMethod] = Nil,
-                       jsLocation: JsLocation,
+                       jsLocation: Option[JsLocation]=None,
                        codePath: CodePath
                      ) extends ScalaCode
 case class ScalaEnumMember(name: String, expr: Option[TsExpr] = None, comments: Comments) extends ScalaCode

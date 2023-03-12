@@ -1,11 +1,12 @@
-@(namespace:String, importList: List[String], reqResps:List[(String,String)])package elasticsearch.client
+@(namespace:String, importList: List[String], reqResps:List[(String,String)])
 package @{namespace}.client
 
+import zio._
 import zio.json._
 import com.github.plokhotnyuk.jsoniter_scala.core._
 import com.github.plokhotnyuk.jsoniter_scala.macros._
 import zio.elasticsearch.ZioResponse
-import zio.elasticsearch.exception.FrameworkException
+import zio.exception.FrameworkException
 @for(action <- importList) {import @action
 }
 
