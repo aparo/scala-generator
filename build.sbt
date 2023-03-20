@@ -9,8 +9,10 @@ autoStartServer := false
 Global / excludeLintKeys += autoStartServer
 
 // bloop hasn't upgraded to scala-xml 2 yet
-ThisBuild / libraryDependencySchemes ++= Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
-  "com.lihaoyi" %% "geny" % VersionScheme.Always)
+ThisBuild / libraryDependencySchemes ++= Seq(
+  "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
+  "com.lihaoyi" %% "geny" % VersionScheme.Always,
+)
 
 lazy val core = project
   .configure(baseSettings, optimize)

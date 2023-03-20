@@ -1,25 +1,25 @@
 package parsers.json
 
 object Js {
-sealed trait Val extends Any {
-  def value: Any
-  def apply(i: Int): Val = this.asInstanceOf[Arr].value(i)
-  def apply(s: java.lang.String): Val =
-    this.asInstanceOf[Obj].value.find(_._1 == s).get._2
-}
-case class Str(value: java.lang.String) extends AnyVal with Val
-case class Obj(value: (java.lang.String, Val)*) extends AnyVal with Val
-case class Arr(value: Val*) extends AnyVal with Val
-case class Num(value: Double) extends AnyVal with Val
-case object False extends Val{
-  def value = false
-}
-case object True extends Val{
-  def value = true
-}
-case object Null extends Val{
-  def value = null
-}
+  sealed trait Val extends Any {
+    def value: Any
+    def apply(i: Int): Val = this.asInstanceOf[Arr].value(i)
+    def apply(s: java.lang.String): Val =
+      this.asInstanceOf[Obj].value.find(_._1 == s).get._2
+  }
+  case class Str(value: java.lang.String) extends AnyVal with Val
+  case class Obj(value: (java.lang.String, Val)*) extends AnyVal with Val
+  case class Arr(value: Val*) extends AnyVal with Val
+  case class Num(value: Double) extends AnyVal with Val
+  case object False extends Val {
+    def value = false
+  }
+  case object True extends Val {
+    def value = true
+  }
+  case object Null extends Val {
+    def value = null
+  }
 }
 object JsonParser {
 
@@ -37,9 +37,7 @@ object JsonParser {
 
   def integral[_: P] = P("0" | CharIn("1-9") ~ digits.?)
 
-  def number[_: P] = P(CharIn("+\\-").? ~ integral ~ fractional.? ~ exponent.?).!.map(
-    x => Js.Num(x.toDouble)
-  )
+  def number[_: P] = P(CharIn("+\\-").? ~ integral ~ fractional.? ~ exponent.?).!.map(x => Js.Num(x.toDouble))
 
   def `null`[_: P] = P("null").map(_ => Js.Null)
 
@@ -67,6 +65,6 @@ object JsonParser {
     P("{" ~/ pair.rep(sep = ","./) ~ space ~ "}").map(Js.Obj(_: _*))
 
   def jsonExpr[_: P]: P[Js.Val] = P(
-    space ~ (obj | array | string | `true` | `false` | `null` | number) ~ space
+    space ~ (obj | array | string | `true` | `false` | `null` | number) ~ space,
   )
 }

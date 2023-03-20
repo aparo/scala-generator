@@ -20,7 +20,21 @@ trait BaseCodeGenerator {
   val managers        = new mutable.HashMap[String, String]
   val extras          = new mutable.HashMap[String, String]
   val implicits       = new mutable.HashMap[String, List[String]]
-  var files           = os.walk(root, skip = { f => !f.last.endsWith(".json") })
+  lazy val apiFiles = os
+    .walk(root)
+    .filter(os.isFile(_, followLinks = false))
+    .filter(_.last.endsWith(".json"))
+
+  lazy val tsFiles = os
+    .walk(devConfig.specAPIPath / "specification")
+    .filter(os.isFile(_, followLinks = false))
+    .filter(_.last.endsWith(".ts"))
+//    .filterNot(_.toString.contains("_types")) // we skip for now
+    .filterNot(_.toString.contains("mapping")) // we skip for now
+    .filterNot(_.toString.contains("aggregations/pipeline.ts")) // we skip for now
+    .filter(_.toString.contains("ingest")) // we process only ingest
+    .toList
+
   lazy val mappingFiles =
     os.walk(devConfig.devRestAPIPath / "mappings", skip = { f => !f.last.endsWith(".json") }).toList
 

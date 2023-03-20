@@ -383,7 +383,7 @@ case class APIEntry(
 //  }
 
   def responseFilename: String = s"${responsePackage}.${scalaResponse}"
-  def responsePackage:  String = s"${Constants.namespaceName}.responses.${scope.replace("client", "")}".stripSuffix(".")
+  def responsePackage:  String = s"${Constants.namespaceName}.${scope.replace("client", "")}.responses".stripSuffix(".")
 
   def responseClass: String = {
     val text = new ListBuffer[String]
@@ -528,7 +528,7 @@ case class APIEntry(
 //        val key = if (parameter.name != parameter.parameterName) {
 //          s"""@JsonKey("${parameter.name}") """
 //        } else ""
-        val key=""
+        val key = ""
         newLineFunc + s"$key${parameter.getDefParameterNoVar}"
       }
       .toList
@@ -539,7 +539,7 @@ case class APIEntry(
     doc ++= getDefQueryArgs
     doc += "\n"
     if (!hasBody) {
-      doc += """  def body:Json=JsNull"""
+      doc += """  def body:Json=Json.Null"""
       doc += "\n"
       doc += "\n"
     }
@@ -549,8 +549,8 @@ case class APIEntry(
 
     doc += "}\n"
     doc += "\n"
-    doc += s"object ${scalaRequest} {\n"
-    doc += s"implicit val jsonCodec: JsonValueCodec[$scalaRequest] = JsonCodecMaker.make[$scalaRequest](CodecMakerConfig.withFieldNameMapper(JsonCodecMaker.enforceCamelCase))"
+//    doc += s"object ${scalaRequest} {\n"
+//    doc += s"implicit val jsonCodec: JsonValueCodec[$scalaRequest] = JsonCodecMaker.make[$scalaRequest](CodecMakerConfig.withFieldNameMapper(JsonCodecMaker.enforceCamelCase))"
 //    doc += "\n"
 //    doc += "  def apply(" + this.parameters.filter(p => p.required || (!p.required && p.scope == "uri")).
 //      map(p => s"${p.parameterName}:${p.toObjectParam}").toList.mkString(", ") + s"):$scalaRequest = {\n"
@@ -559,7 +559,7 @@ case class APIEntry(
 //    doc += "    }\n"
 //    doc += "  // Custom Code On\n"
 //    doc += "  // Custom Code Off\n"
-    doc += "}\n"
+//    doc += "}\n"
 //    doc += "\n"
 
     doc.toList

@@ -19,7 +19,7 @@ class TestParse extends AnyFunSuite {
     parseWhole("T extends Object3d", typeArgument(_))
     parseWhole(
       "parse<T extends Object3D>(json: any, onLoad?: (object: Object3D) => void): T;",
-      functionMember(_)
+      functionMember(_),
     )
     parseWhole("extends Material | Material[]", singleExtensionClause(_))
     parseWhole("= Material | Material[]", singleDefaultClause(_))
@@ -34,7 +34,7 @@ class TestParse extends AnyFunSuite {
         name: string;
         vertices: Vector3[];
     }""",
-      topInterface(_)
+      topInterface(_),
     )
     parseWhole(
       """export interface Event {
@@ -42,7 +42,7 @@ class TestParse extends AnyFunSuite {
         target?: any;
         [attachment: string]: any;
     }""",
-      fullFile(_)
+      fullFile(_),
     )
   }
 
@@ -56,7 +56,7 @@ class TestParse extends AnyFunSuite {
         DOLLY = 1,
         PAN = 2,
     }""",
-      fullFile(_)
+      fullFile(_),
     )
   }
 
@@ -95,7 +95,7 @@ class TestParse extends AnyFunSuite {
         ): // tslint:disable-next-line:no-unnecessary-generics
         T;
     }""",
-      topClass(_)
+      topClass(_),
     )
 
     parseWhole(
@@ -158,7 +158,7 @@ class TestParse extends AnyFunSuite {
         getRenderTarget: () => WebGLRenderTarget;
     }
     """,
-      allTop(_)
+      allTop(_),
     )
     parseWhole(
       """/**
@@ -209,7 +209,7 @@ class TestParse extends AnyFunSuite {
         dispatchEvent(event: { type: string;[attachment: string]: any }): void;
     }
     """,
-      fullFile(_)
+      fullFile(_),
     )
   }
 }

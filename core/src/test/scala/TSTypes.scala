@@ -47,7 +47,7 @@ class SingleTest extends AnyFunSuite {
     withPrint {
       parseWhole(
         "setCount(count: number): this;",
-        functionMember(_)
+        functionMember(_),
       )
     }
   }
@@ -142,14 +142,13 @@ class BaseTests extends AnyFunSuite {
                  parentSubray: () => Lightning[],
                  childSubray?: (ff: K) => 'string' | void,
                  lightningStrike: LightningStrike,
-             ) => void"""
+             ) => void""",
     )
 
     def dtEnd[_: P] = withEnd(dataType)
 
-    for (tt <- tts) {
+    for (tt <- tts)
       parseWhole(tt, dtEnd(_))
-    }
   }
 
 }
