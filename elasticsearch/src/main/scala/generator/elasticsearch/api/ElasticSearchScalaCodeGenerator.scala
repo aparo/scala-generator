@@ -14,6 +14,7 @@ import zio.ZIO
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCodeGenerator {
+  implicit lazy val parserContext = new ParserContext
 
   lazy val elasticFiles =
     os.walk(devConfig.devESSourcePath, skip = { f => f.last.endsWith(".java") }).toList
@@ -29,7 +30,6 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
     runREST()
 
   def runREST(): ZIO[Any, Throwable, Unit] = {
-    implicit val parserContext = new ParserContext
     for {
       _ <- ZIO.logInfo("Parsing Classes")
       _ <- parseEntities
@@ -38,21 +38,21 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
       apisUnsorted <- ZIO.foreach(
         apiFiles,
         // .filter(_.last == "get.json")
-      )(processFile)
+      )(f => processFile(f))
       apis = apisUnsorted.flatten.toList.sortBy(_.name)
-      esActions = elasticFiles
-        .filter(_.toString().contains("/action/"))
-        .filterNot(_.toString().contains("/post/"))
-        .filterNot(_.toString().contains("/rest/"))
-        .filter(_.last.endsWith("Action.java"))
-        .map(_.last.split('.').head)
-        .filterNot(_.startsWith("Abstract"))
-        .filterNot(_.startsWith("Node"))
-        .filterNot(_.endsWith("AsyncAction"))
-        .filterNot(_ == "Action")
-        .filterNot(_ == "GenericAction")
+//      esActions = elasticFiles
+//        .filter(_.toString().contains("/action/"))
+//        .filterNot(_.toString().contains("/post/"))
+//        .filterNot(_.toString().contains("/rest/"))
+//        .filter(_.last.endsWith("Action.java"))
+//        .map(_.last.split('.').head)
+//        .filterNot(_.startsWith("Abstract"))
+//        .filterNot(_.startsWith("Node"))
+//        .filterNot(_.endsWith("AsyncAction"))
+//        .filterNot(_ == "Action")
+//        .filterNot(_ == "GenericAction")
       currentActions = apis.flatMap(_.nativeAction)
-      missing        = esActions.toSet -- currentActions.map(_.split('.').last).toSet
+//      missing        = esActions.toSet -- currentActions.map(_.split('.').last).toSet
       zioAccessManagers <- generateApis(apis)
       _ <- generateManagers()
 //      _ <- ZIO.attempt(generateZioAccessors(zioAccessManagers))
@@ -63,7 +63,7 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
     } yield ()
   }
 
-  def generateEnumeration()(implicit parserContext: ParserContext): ZIO[Any, Throwable, Unit] = for {
+  def generateEnumeration(): ZIO[Any, Throwable, Unit] = for {
     _ <- ZIO.logDebug(s"Generating new files in ${destDir}")
     _ <- ZIO.attempt(
       PathUtils.saveScalaFile(
@@ -111,7 +111,7 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
 //    fw.write("\n\n}\n\n")
 //    fw.close()
 
-  def generateManagers()(implicit parserContext: ParserContext): ZIO[Any, Throwable, Unit] =
+  def generateManagers(): ZIO[Any, Throwable, Unit] =
     ZIO.foreachDiscard(managers) { case (name, code) =>
       ZIO.attempt(
         PathUtils.saveScalaFile(
@@ -131,7 +131,7 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
 
   def generateApis(
       apis:                 Seq[APIEntry],
-  )(implicit parserContext: ParserContext): ZIO[Any, Throwable, Map[String, String]] = ZIO.attempt {
+  ): ZIO[Any, Throwable, Map[String, String]] = ZIO.attempt {
     val zioAccessManagers = new mutable.HashMap[String, String]
 
     apis.foreach { apiEntry =>
@@ -174,7 +174,7 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
 
   }
 
-  def generateRequest(destDir: Path, api: APIEntry)(implicit parserContext: ParserContext): Unit = {
+  def generateRequest(destDir: Path, api: APIEntry): Unit = {
     val ddir = api.scope match {
       case "client" =>
         destDir / "requests"
@@ -200,7 +200,9 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
     api.extra.foreach { case (k, v) =>
       imports += s"${Constants.namespaceName}.$k"
     }
+//    val rq        = api.generateRequestOld.mkString
     val rq        = api.generateRequest.mkString
+
     val generated = elasticsearch.txt.ScalaRequest(namespace, imports.toSet.toList.sorted, rq).toString()
     PathUtils.saveScalaFile(generated, filename)
 
@@ -253,7 +255,7 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
       )
     }
 
-  def parseEntities(implicit parserContext: ParserContext): ZIO[Any, Throwable, Unit] =
+  def parseEntities: ZIO[Any, Throwable, Unit] =
     ZIO.foreachDiscard(
       tsFiles,
       // .filter(_.last == "get.json")

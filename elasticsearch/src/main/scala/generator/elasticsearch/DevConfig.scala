@@ -32,16 +32,3 @@ object DevConfig {
     )
 
 }
-
-// class DevConfig extends ConfigHelper {
-//   def rootConfig: Config = ConfigFactory.load()
-
-//   lazy val devESSourcePath =
-//     get[String]("dev.elasticsearch-path") || (File.home / "sources" / "elasticsearch" / "elasticsearch")
-//       .toString()
-//   lazy val devRestAPIPath      = get[String]("dev.rest-api-path") || "/opt/meglio/tools/generator/rest-api-spec"
-//   lazy val devScalaAPIDestPath = get[String]("dev.scala-api-path") || "/opt/meglio/tools/generator/tmp"
-// //  lazy val devRestAPIPath      = get[String]("dev.rest-api-path") || (File.home / "Projects" / "code-generator" / "rest-api-spec").toString()
-// //  lazy val devScalaAPIDestPath = get[String]("dev.scala-api-path") || (File.home / "Projects" / "code-generator" / "tmp").toString()
-
-// }

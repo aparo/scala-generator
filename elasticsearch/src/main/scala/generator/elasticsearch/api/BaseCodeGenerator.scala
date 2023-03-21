@@ -5,16 +5,18 @@
 package generator.elasticsearch.api
 
 import zio.json.JsoniterScalaCodec._
+
 import scala.collection.mutable
 import com.github.plokhotnyuk.jsoniter_scala.core._
 import com.github.plokhotnyuk.jsoniter_scala.macros._
 import generator.elasticsearch.DevConfig
+import generator.ts.ParserContext
 import zio._
 trait BaseCodeGenerator {
 
   def devConfig: DevConfig
 
-  val root = devConfig.devRestAPIPath / "api"
+  lazy val root = devConfig.devRestAPIPath / "api"
 
   val managersImports = new mutable.HashMap[String, List[String]]
   val managers        = new mutable.HashMap[String, String]
@@ -24,6 +26,9 @@ trait BaseCodeGenerator {
     .walk(root)
     .filter(os.isFile(_, followLinks = false))
     .filter(_.last.endsWith(".json"))
+    .filter(f =>
+      f.toString.contains("autoscaling."))
+    .toList
 
   lazy val tsFiles = os
     .walk(devConfig.specAPIPath / "specification")
@@ -32,7 +37,11 @@ trait BaseCodeGenerator {
 //    .filterNot(_.toString.contains("_types")) // we skip for now
     .filterNot(_.toString.contains("mapping")) // we skip for now
     .filterNot(_.toString.contains("aggregations/pipeline.ts")) // we skip for now
-    .filter(_.toString.contains("ingest")) // we process only ingest
+    .filter(f =>
+      f.toString.contains("autoscaling") ||
+      f.toString.contains("Base.ts") || // requests
+      f.toString.contains("behaviors.ts")
+    )
     .toList
 
   lazy val mappingFiles =
@@ -40,13 +49,17 @@ trait BaseCodeGenerator {
 
   def run(): ZIO[Any, Throwable, Unit]
 
-  protected def processFile(name: os.Path): ZIO[Any, Throwable, Seq[APIEntry]] =
+  protected def processFile(name: os.Path)(implicit parserContext: ParserContext): ZIO[Any, Throwable, Seq[APIEntry]] =
     if (name.baseName.startsWith("_")) ZIO.succeed(Nil)
     else {
       for {
         _ <- ZIO.debug(s"Processing $name")
-        obj <- ZIO.attempt(readFromStream[Map[String, APIEntry]](name.getInputStream))
-      } yield obj.map(v => v._2.copy(name = v._1)).toSeq
+        obj <- ZIO.attempt({
+          readFromStream[Map[String, APIEntry]](name.getInputStream).map{
+            v => v._2.copy(name = v._1).parse
+          }
+        })
+      } yield obj.toSeq
     }
 
 }

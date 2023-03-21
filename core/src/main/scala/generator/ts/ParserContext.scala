@@ -49,6 +49,8 @@ class ParserContext() {
   def parse(namespace: String, ts: TsDeclInterface)(implicit inFile: InFile): ScalaClass = {
     val allMembers = ts.members.toList.map(parse)
     var name       = ts.name.value
+    if (name == "Request") name = inFile.path.last.replace(".ts", "")
+    if (name == "Response") name = inFile.path.last.replace(".ts", "")
 
     ScalaClass(
       namespace = namespace,
@@ -120,7 +122,7 @@ class ParserContext() {
       isConst = ts.isConst,
       isValue = ts.isValue,
       exportedFrom = ts.exportedFrom.map(parseTsTypeRef),
-      members = ts.members.toList.map(m => ScalaEnumMember(name = m.name.value, expr = m.expr, comments = m.comments)),
+      values = ts.members.toList.map(m => ScalaEnumMember(name = m.name.value, expr = m.expr, comments = m.comments)),
       jsLocation = ts.jsLocation,
       codePath = ts.codePath,
     )
@@ -193,4 +195,38 @@ class ParserContext() {
 
   def getClass(name: String): Option[ScalaClass] =
     scalaClasses.values.find(_.name == name)
+
+  def getNamespaceClass(name: String): Option[ScalaClass] =
+    scalaClasses.get(name)
+
+  def getRecursiveMembers(typ:ScalaType):List[ScalaClassMember]={
+    getClass(typ.toScalaType) match {
+      case Some(value) => value.members ++ value.implements.flatMap(getRecursiveMembers)
+      case None => Nil
+    }
+  }
+
+  def getRecursiveMembersWithParentName(typ: ScalaType): List[(String, ScalaClassMember)] = {
+    getClass(typ.toScalaType) match {
+      case Some(value) => value.members.map(v => typ.toScalaType -> v) ++ value.implements.flatMap(getRecursiveMembersWithParentName)
+      case None => Nil
+    }
+  }
+
+  lazy val MAP_DEFAULTS=Map(
+    ("", "acknowledged") -> "true"
+  )
+
+  def getDefaultParameter(clsName:String, name:String, typ:String):String= {
+    if(MAP_DEFAULTS.contains(clsName -> name)){
+      MAP_DEFAULTS(clsName -> name)
+    } else {
+      typ match {
+        case "Boolean" => "true"
+        case s:String if s.startsWith("Chunk[")=> "Chunk.empty"+s.substring("Chunk".length)
+        case s:String if s.startsWith("Map[")=> "Map.empty"+s.substring("Map".length)
+        case s:String if s.startsWith("List[")=> "Nil"
+      }
+    }
+  }
 }

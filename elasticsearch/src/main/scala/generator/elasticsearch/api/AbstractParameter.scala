@@ -8,6 +8,7 @@ import scala.collection.mutable.ListBuffer
 import zio.json.JsoniterScalaCodec._
 import com.github.plokhotnyuk.jsoniter_scala.core._
 import com.github.plokhotnyuk.jsoniter_scala.macros._
+import generator.ts.ParserContext
 import zio.json.ast.Json
 
 sealed trait AbstractParameter {
@@ -51,7 +52,9 @@ sealed trait AbstractParameter {
           "Double"
       }
 
-    case "JsonObject" => "JsonObject"
+    case "Json.Obj" => "Json.Obj"
+    case "Boolean"|"Map[String,Json]"|"Chunk[String]"           => `type`
+    case "String|Chunk[String]|None" => "Chunk[String]"
     case ""           => "String"
   }
 
@@ -247,6 +250,19 @@ case class CallParameter(
 
   def getDefParameterNoVar = s"$parameterName: $toQueryParam"
 
+  def getDefault(clsName:String)(implicit parserContext: ParserContext):String={
+    this.default match {
+      case Some(value) => value.toJson
+      case None => parserContext.getDefaultParameter(clsName, this.name, this.`type`)
+    }
+  }
+
+  def getParameterWithDefault(clsName:String)(implicit parserContext: ParserContext):String = {
+  if(required) {
+      s"$parameterName: $toQueryParam = ${getDefault(clsName)}"
+    } else s"$parameterName: $toQueryParam"
+  }
+
   def parameterName: String = this.getParameterName(this.name)
 
   def toQueryParam: String = toQueryParam(this.name)
@@ -254,49 +270,6 @@ case class CallParameter(
   def toObjectParam: String = toQueryParam(this.name).split("=")(0).trim()
 
   def toBodyCode: String = toBodyCode(this.name)
-
-  //  override def toQueryParam(name: String): String = {
-  //    val code = new ListBuffer[String]()
-  //
-  //    if (multiple) {
-  //      if (defaultIsValid) {
-  //        code += "Seq[String] = " + default.get
-  //      } else {
-  //        if (required)
-  //          code += "Seq[String]"
-  //        else
-  //        code += "Seq[String] = Nil"
-  //      }
-  //    } else if (this.`type`.startsWith("Seq[")) {
-  //      if (defaultIsValid) {
-  //        code += "Seq[String] = " + default.get
-  //      } else {
-  //        if (required)
-  //          code += "Seq[String]"
-  //        else
-  //          code += "Seq[String] = Nil"
-  //      }
-  //    } else if (this.`type` == "enum") {
-  //      val enum = toGoodName(name).capitalize
-  //      if (defaultIsValid) {
-  //        code += s"""${enum}.${enum} = ${enum}.""" + default.get
-  //      } else {
-  //        code += s"""Option[${enum}.${enum}] = None"""
-  //      }
-  //    } else {
-  //      if (defaultIsValid) {
-  //        code += getType + "=" + getCookedDefault
-  //      } else {
-  //        if (required)
-  //          code += s"${getType}"
-  //        else
-  //          code += s"Option[${getType}] = None"
-  //      }
-  //
-  //    }
-  //
-  //    code.mkString
-  //  }
 
 }
 

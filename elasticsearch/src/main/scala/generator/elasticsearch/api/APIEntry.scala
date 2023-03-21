@@ -7,10 +7,10 @@ package generator.elasticsearch.api
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable
 import java.io.{File, FileWriter}
-
 import com.github.plokhotnyuk.jsoniter_scala.core._
 import com.github.plokhotnyuk.jsoniter_scala.macros._
 import generator.elasticsearch.Constants
+import generator.ts.{ParserContext, ScalaClassMember}
 case class APIDocumetation(url: String, description: String)
 object APIDocumetation {
   implicit val codec: JsonValueCodec[APIDocumetation] = JsonCodecMaker.make[APIDocumetation]
@@ -33,18 +33,48 @@ case class APIEntry(
   var extra:              Map[String, String] = Map.empty[String, String]
   var implicits:          List[String]        = List.empty[String]
   private var parameters: List[CallParameter] = List.empty[CallParameter]
+  private var implements: List[String] = List.empty[String]
 
   // from indices.get_field_mapping -> IndicesGetFieldMapping
+//  val className: String = {
+//    val n = name.split('.').flatMap(_.split('_')).map(_.capitalize).mkString
+//    APIEntry.mappingNames.getOrElse(n, n)
+//  }
+  // from indices.get_field_mapping -> GetFieldMapping
   val className: String = {
-    val n = name.split('.').flatMap(_.split('_')).map(_.capitalize).mkString
+    val n = name.split('.').drop(1).flatMap(_.split('_')).map(_.capitalize).mkString
     APIEntry.mappingNames.getOrElse(n, n)
   }
+
   val scalaRequest:  String = className + "Request"
   val scalaResponse: String = className + "Response"
 
-  parse()
+  def toCallParameter(p: ScalaClassMember): CallParameter = CallParameter(
+    name=p.name,
+    `type`=p.typ.map{
+      typ =>
+      var result=typ.toScalaType
+        if(result.startsWith("Option["))result=result.substring("Option[".length, result.length-1)
+      result
+    }.getOrElse("Json"),
+    description = p.comments.rawCs.map(fixCommentTyped).filter(_.nonEmpty).mkString("", "", "\n"),
+    required = !p.isOptional
 
-  private def parse(): Unit = {
+  )
+
+  def fixCommentTyped(str:String):String={
+    var result=str
+    if(result.startsWith("/**")) result=result.substring(3).trim
+    result=result.dropWhile(_.isSpaceChar)
+    if(result.startsWith("* ")) result=result.substring(2)
+    result = result.dropWhile(_.isSpaceChar)
+    if(result.contains("*/")) result=result.replace("*/", "").trim
+    if(result.startsWith("@")) result="\n"+result
+
+    result
+  }
+
+  def parse(implicit parserContext: ParserContext): APIEntry = {
     val extra      = new mutable.HashMap[String, String]
     val implicits  = new ListBuffer[String]
     val parameters = new ListBuffer[CallParameter]
@@ -76,10 +106,10 @@ case class APIEntry(
     val requiredPathsCount = requiredPaths.count(p => partRequired(p))
     val hasBody            = this.body.isDefined
     val bodyType = this.body match {
-      case None => "JsonObject"
+      case None => "Json.Obj"
       case Some(b) =>
         b.serialize match {
-          case ""     => "JsonObject"
+          case ""     => "Json.Obj"
           case "bulk" => "list"
         }
     }
@@ -169,7 +199,21 @@ case class APIEntry(
       }
     }
 
+    // we add other request parameters taken from typed parsed data
+    // retrieve typed data
+    parserContext.getNamespaceClass(s"${scope}.requests.${scalaRequest}").foreach{
+      rqTyped =>
+        implements = if (rqTyped.implements.isEmpty) Nil else {
+          rqTyped.implements.map(_.toScalaType)
+        }
+        // called all derived typed parameters
+        val recursiveFields = rqTyped.implements.flatMap(impl => parserContext.getRecursiveMembers(impl))
+        para2 ++= recursiveFields.map(p => toCallParameter(p))
+    }
+
+
     this.parameters = para2.toList.filter(_.required) ++ para2.filterNot(_.required).sortBy(_.name.dropWhile(_ == '_'))
+    this
   }
 
   def methods: List[String] = url.paths.flatMap(_.methods)
@@ -187,7 +231,7 @@ case class APIEntry(
     case v       => v
   }
 
-  val hasBody: Boolean = this.body.isDefined
+  def hasBody: Boolean = this.body.isDefined
 
   def clientName: String = if (scope == "client") "this" else "client"
 
@@ -195,7 +239,7 @@ case class APIEntry(
     val text     = new ListBuffer[String]
     val funcName = toGoodName(name.split("\\.").last)
     // generating class documentation
-    text ++= cookedDocumentation.map(s => "  " + s)
+    text ++= cookedDocumentation(true, this.parameters).map(s => "  " + s)
 
     val defFunc = s"def $funcName("
     text += defFunc
@@ -226,7 +270,7 @@ case class APIEntry(
     val text     = new ListBuffer[String]
     val funcName = toGoodName(name.split("\\.").last)
     // generating class documentation
-    text ++= cookedDocumentation.map(s => "  " + s)
+    text ++= cookedDocumentation(true, this.parameters).map(s => "  " + s)
 
     val defFunc = s"def $funcName("
     text += defFunc
@@ -263,7 +307,7 @@ case class APIEntry(
     val text     = new ListBuffer[String]
     val funcName = toGoodName(name.split("\\.").last)
     // generating class documentation
-    text ++= cookedDocumentation.map(s => "  " + s)
+    text ++= cookedDocumentation(true, this.parameters).map(s => "  " + s)
 
     val defFunc = s"  def $funcName("
     text += defFunc + "\n"
@@ -314,159 +358,84 @@ case class APIEntry(
 
   def requestPackage: String = s"${Constants.namespaceName}.requests.${scope.replace("client", "")}".stripSuffix(".")
 
-//  def requestClass: String = {
-//    val text = new ListBuffer[String]
-//    //generating class documentation
-//    text += s"package $requestPackage\n\n"
-//
-//    text += "import scala.collection.mutable\n"
-//    text += "import play.api.libs.json._\n"
-//    text += "import play.json.extra._\n"
-//    text ++= extra.map(v => s"import elasticsearch.${v._1}\n")
-//    text += "import elasticsearch.client.ElasticSearchCall\n\n"
-//
-//
-//    text ++= cookedDocumentation.map(s => "  " + s)
-//
-//
-//      text += s"@JsonFormat\n"
-//    text += s"final case class ${nativeRequest.get.split("""\.""").last}(\n"
-//
-//    val newLineFunc: String = "    "
-//
-//    text += this.parameters.map {
-//      parameter =>
-//
-//        val key=if (parameter.name != parameter.parameterName) {s"""@key("${parameter.name}") """} else ""
-//
-//        newLineFunc + s"$key${parameter.getDefParameterNoVar}"
-//
-//    }.mkString(",\n")
-//    text += ") extends ElasticSearchCall {\n"
-//
-//    //queryArgs
-//    text += "\n"
-//    text += newLineFunc+s"""val urlPath:String = buildUrl("$path""""
-//    text += this.parameters.filter(_.scope=="uri").map {
-//      parameter =>
-//        ", "+parameter.parameterName
-//    }.mkString("")
-//    text += ")\n\n"
-//
-//    //queryArgs
-//    text += "\n"
-//    text += newLineFunc+"def queryArgs:Map[String,String] = {\n"
-//    text += newLineFunc*2+"val result = new mutable.HashMap[String,String]\n"
-//    text += newLineFunc*2
-//    text += this.parameters.filter(_.scope=="query").map {
-//      p =>
-//        val pname = p.parameterName
-//        if (!p.required) {
-//          if (p.default.isDefined) {
-//            s"""if(${pname} != ${p.getCookedDefault}) result += ("${p.name}" -> ${pname})"""
-//          } else {
-//            s"""${pname}.foreach{ p => result += ("${p.name}" -> p) }"""
-//          }
-//        } else {
-//          s"""result += ("${p.name}" -> ${pname})"""
-//        }
-//
-//    }.mkString(s"\n${newLineFunc*2}")
-//    text += "\n"+newLineFunc+"}\n"
-//    text += "\n"
-//
-//
-//
-//    text += "}\n"
-//
-//    text.mkString
-//  }
-
   def responseFilename: String = s"${responsePackage}.${scalaResponse}"
   def responsePackage:  String = s"${Constants.namespaceName}.${scope.replace("client", "")}.responses".stripSuffix(".")
 
-  def responseClass: String = {
+  def responseClass(implicit parserContext: ParserContext): String = {
     val text = new ListBuffer[String]
     // generating class documentation
     text += s"package $responsePackage\n\n"
     text += s"import scala.collection.mutable\n"
-    text += s"import com.github.plokhotnyuk.jsoniter_scala.core._\n"
-    text += s"import com.github.plokhotnyuk.jsoniter_scala.macros._\n"
+    text += s"import zio.json._\n"
+    text += s"import zio.json.ast._\n"
+//    text += s"import com.github.plokhotnyuk.jsoniter_scala.core._\n"
+//    text += s"import com.github.plokhotnyuk.jsoniter_scala.macros._\n"
     text ++= extra.map(v => s"import ${Constants.namespaceName}.${v._1}\n")
 
-    text ++= cookedDocumentation.map(s => "  " + s)
+    var implements: List[String] = List.empty[String]
 
-    text += s"final case class $scalaResponse(){\n"
-    text += "}\n"
 
-    text += s"object $scalaResponse{\n"
-    text += s"implicit val jsonCodec: JsonValueCodec[$scalaResponse] = JsonCodecMaker.make[$scalaResponse](CodecMakerConfig.withFieldNameMapper(JsonCodecMaker.enforceCamelCase))"
-    text += "}\n"
+    val para2=new ListBuffer[(String, CallParameter)]()
 
-    text.mkString
-  }
+    // we add other request parameters taken from typed parsed data
+    // retrieve typed data
+    parserContext.getNamespaceClass(s"${scope}.responses.${scalaResponse}").foreach {
+      rqTyped =>
+        implements = if (rqTyped.implements.isEmpty) Nil else {
+          rqTyped.implements.map(_.toScalaType)
+        }
+        // called all derived typed parameters
 
-  def getClientCalls_old: String = {
-    val text     = new ListBuffer[String]
-    val funcName = toGoodName(name.split("\\.").last)
-    // generating class documentation
-    text ++= cookedDocumentation.map(s => "  " + s)
+        val recursiveFields = new ListBuffer[(String, ScalaClassMember)]()
+         rqTyped.members.find(_.name=="body").foreach{
+           c =>
+             recursiveFields ++=c.members.map(v => rqTyped.name -> v )
+             c.typ match {
+               case Some(value) =>
+                 recursiveFields ++=parserContext.getRecursiveMembersWithParentName(value)
+               case None =>
+             }
+         }
+        para2 ++= recursiveFields.map(p => p._1 -> toCallParameter(p._2))
+    }
 
-    val defFunc = s"  def $funcName("
-    text += defFunc + "\n"
 
-    val newLineFunc: String = " " * defFunc.length
+    val parameters: List[(String, CallParameter)] = para2.toList.filter(_._2.required) ++ para2.filterNot(_._2.required).sortBy(_._2.name.dropWhile(_ == '_'))
+    text ++= cookedDocumentation(true, parameters.map(_._2)).map(s => "  " + s)
 
-    text += this.parameters
-      .map { parameter =>
-        newLineFunc + s"${parameter.getDefParameterNoVar}"
+    text += s"final case class ${scalaResponse}(\n"
 
+    val newLineFunc: String = "  "
+
+
+    text += parameters
+      .map {
+        case (className, parameter) =>
+        val key = ""
+        newLineFunc + s"$key${parameter.getParameterWithDefault(className)}"
       }
       .toList
       .mkString(",\n")
-    text += "): " + getRequestZioReturn
-    text += " ={\n"
-
-    text += "    // Custom Code On\n"
-    text += "    // Custom Code Off\n"
-
-    val funcCall = s"    $funcName(new $scalaRequest("
-    var size     = funcCall.length
-    text += funcCall + parameters
-      .map { p =>
-        val pname = p.parameterName
-        size = size + pname.length * 2 + 1
-        if (size > 80) {
-          size = pname.length * 2 + 1 + funcCall.length
-          "\n" + " " * funcCall.length + s"${pname}=${pname}"
-        } else s"${pname}=${pname}"
+    if(implements.nonEmpty){
+      implements.headOption.foreach{
+        cls =>
+          text+=s") extends $cls "
       }
-      .mkString(", ")
-    text += s"))\n"
+      val remains=implements.tail
+      if(remains.nonEmpty){
+        text+=s"${implements.mkString("with ", "with ", "")}"
+      }
+      text+="{\n"
 
-    //    if (hasBody)
-    //      if (result.isDefined) {
-    //        text += s"""    val response=${clientName}.doCall("${methods.head}", urlPath, body, queryArgs=queryArgs.toMap)\n"""
-    //      } else {
-    //        text += s"""    ${clientName}.doCall("${methods.head}", urlPath, body, queryArgs=queryArgs.toMap)"""
-    //      }
-    //    else
-    //    if (result.isDefined) {
-    //      text += s"""    val response=${clientName}.doCall("${methods.head}", urlPath, queryArgs=queryArgs.toMap)\n"""
-    //    } else {
-    //      text += s"""    ${clientName}.doCall("${methods.head}", urlPath, queryArgs=queryArgs.toMap)"""
-    //    }
-    //
-    //    result match {
-    //      case Some(value) =>
-    //        val implicitsName = value.scala(0).toLower + value.scala.substring(1) + "Fmt"
-    //        text += s"""    ${implicitsName}.reads(response).get"""
-    //      case _ =>
-    //    }
+    } else {
+      text+=s") {\n"
+    }
+    text += "}\n"
 
-    text += "\n  }\n\n"
-
-    text += s"  def $funcName(request:$scalaRequest):$getRequestZioReturn= ${clientName}.doCall(request).map(fromJsonOrError[$getRequestReturn])\n\n"
+    text += s"object $scalaResponse{\n"
+//    text += s"implicit val jsonCodec: JsonValueCodec[$scalaResponse] = JsonCodecMaker.make[$scalaResponse](CodecMakerConfig.withFieldNameMapper(JsonCodecMaker.enforceCamelCase))"
+    text += s"   implicit val jsonCodec: JsonCodec[$scalaResponse] = DeriveJsonCodec.gen[$scalaResponse]"
+    text += "}\n"
 
     text.mkString
   }
@@ -482,14 +451,15 @@ case class APIEntry(
         case _           => scalaResponse
       }
 
-  lazy val cookedDocumentation: List[String] = {
+  def cookedDocumentation(withParameters:Boolean, parameters: List[CallParameter]): List[String] = {
     val doc = new ListBuffer[String]
     doc += "/*\n"
     doc += " * " + this.documentation.description + "\n"
     doc += " * For more info refers to " + this.documentation.url + "\n"
-    doc += " * \n"
-    doc += this.parameters.map(_.getCookedDocumentation).mkString("\n")
-    doc += "\n"
+    if(withParameters && parameters.nonEmpty){
+      doc += " * \n"
+      doc += parameters.map(_.getCookedDocumentation).mkString("", "\n", "\n")
+    }
     doc += " */\n"
     doc.toList
   }
@@ -510,29 +480,25 @@ case class APIEntry(
       scope = tokens(tokens.length - 2)
     scope
   }
-
   def generateRequest: List[String] = {
     val doc = new ListBuffer[String]
     // generating class documentation
 
-    doc ++= cookedDocumentation
-    //    doc += "\n"
+    doc ++= cookedDocumentation(true, this.parameters)
     val classDef =
       doc += "\n"
     doc += s"final case class ${scalaRequest}(\n"
 
     val newLineFunc: String = " " * classDef.length
 
+
     doc += this.parameters
       .map { parameter =>
-//        val key = if (parameter.name != parameter.parameterName) {
-//          s"""@JsonKey("${parameter.name}") """
-//        } else ""
         val key = ""
         newLineFunc + s"$key${parameter.getDefParameterNoVar}"
       }
       .toList
-      .mkString(",\n") + ") extends ActionRequest {\n"
+      .mkString(",\n") + s") extends ActionRequest ${implements.mkString("with ", "with ", "")}{\n"
     doc += s"""  def method:String="${methods.head}"\n\n"""
     doc ++= getDefUrlPath
     doc += "\n"
