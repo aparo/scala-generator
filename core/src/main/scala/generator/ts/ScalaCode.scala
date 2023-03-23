@@ -107,7 +107,7 @@ case class ScalaClassMember(
 ) extends ScalaCode {
   def isOptional: Boolean = typ.exists(_.isRequired) || name.endsWith("?")
 
-  override def members: List[ScalaClassMember] = Nil
+  override def members: List[ScalaClassMember] = List(this)
 }
 
 case class ScalaClassMethod(name: String, level: TsProtectionLevel, comments: Comments) extends ScalaCode{

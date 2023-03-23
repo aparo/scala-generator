@@ -10,7 +10,7 @@ import java.io.{File, FileWriter}
 import com.github.plokhotnyuk.jsoniter_scala.core._
 import com.github.plokhotnyuk.jsoniter_scala.macros._
 import generator.elasticsearch.Constants
-import generator.ts.{ParserContext, ScalaClassMember}
+import generator.ts.{CodeData, ParserContext, ScalaClassMember}
 case class APIDocumetation(url: String, description: String)
 object APIDocumetation {
   implicit val codec: JsonValueCodec[APIDocumetation] = JsonCodecMaker.make[APIDocumetation]
@@ -354,23 +354,23 @@ case class APIEntry(
     text.mkString
   }
 
-  def requestFilename: String = requestPackage + "." + nativeRequest.get.split('.').last
+  def requestPackage: String = s"$basePackage.requests".stripSuffix(".")
 
-  def requestPackage: String = s"${Constants.namespaceName}.requests.${scope.replace("client", "")}".stripSuffix(".")
+  def responsePackage:  String = s"$basePackage.responses".stripSuffix(".")
 
-  def responseFilename: String = s"${responsePackage}.${scalaResponse}"
-  def responsePackage:  String = s"${Constants.namespaceName}.${scope.replace("client", "")}.responses".stripSuffix(".")
+  def basePackage:  String = s"${Constants.namespaceName}.${scope.replace("client", "")}".stripSuffix(".")
 
-  def responseClass(implicit parserContext: ParserContext): String = {
+  def generateResponse(implicit parserContext: ParserContext): CodeData = {
+    val imports = new ListBuffer[String]
+
     val text = new ListBuffer[String]
     // generating class documentation
-    text += s"package $responsePackage\n\n"
-    text += s"import scala.collection.mutable\n"
-    text += s"import zio.json._\n"
-    text += s"import zio.json.ast._\n"
+    imports += s"import $basePackage._\n"
+    imports += s"import zio.json._\n"
+    imports += s"import zio.json.ast._\n"
 //    text += s"import com.github.plokhotnyuk.jsoniter_scala.core._\n"
 //    text += s"import com.github.plokhotnyuk.jsoniter_scala.macros._\n"
-    text ++= extra.map(v => s"import ${Constants.namespaceName}.${v._1}\n")
+    imports ++= extra.map(v => s"import ${Constants.namespaceName}.${v._1}\n")
 
     var implements: List[String] = List.empty[String]
 
@@ -389,7 +389,7 @@ case class APIEntry(
         val recursiveFields = new ListBuffer[(String, ScalaClassMember)]()
          rqTyped.members.find(_.name=="body").foreach{
            c =>
-             recursiveFields ++=c.members.map(v => rqTyped.name -> v )
+//             recursiveFields ++=c.members.map(v => rqTyped.name -> v ).filter(v => v._1!=v._2.name)
              c.typ match {
                case Some(value) =>
                  recursiveFields ++=parserContext.getRecursiveMembersWithParentName(value)
@@ -401,43 +401,55 @@ case class APIEntry(
 
 
     val parameters: List[(String, CallParameter)] = para2.toList.filter(_._2.required) ++ para2.filterNot(_._2.required).sortBy(_._2.name.dropWhile(_ == '_'))
-    text ++= cookedDocumentation(true, parameters.map(_._2)).map(s => "  " + s)
-
-    text += s"final case class ${scalaResponse}(\n"
-
-    val newLineFunc: String = "  "
-
-
-    text += parameters
-      .map {
-        case (className, parameter) =>
-        val key = ""
-        newLineFunc + s"$key${parameter.getParameterWithDefault(className)}"
-      }
-      .toList
-      .mkString(",\n")
-    if(implements.nonEmpty){
-      implements.headOption.foreach{
-        cls =>
-          text+=s") extends $cls "
-      }
-      val remains=implements.tail
-      if(remains.nonEmpty){
-        text+=s"${implements.mkString("with ", "with ", "")}"
-      }
-      text+="{\n"
-
+    var filename = s"$responsePackage/$scalaResponse.scala".substring(Constants.namespaceName.length+1)
+    var isPackage=false
+    if(parameters.length==1 && parameters.head._1=="Map") {
+      // case simple type
+      val code=parameters.head._2.toQueryParam
+      text += s"type ${scalaResponse}=$code\n"
+      // this must go in a package
+      filename = s"$responsePackage/package.scala".substring(Constants.namespaceName.length+1)
+      isPackage=true
     } else {
-      text+=s") {\n"
+      // case object that need to manage the data
+      text ++= cookedDocumentation(true, parameters.map(_._2)).map(s => "  " + s)
+
+      text += s"final case class ${scalaResponse}(\n"
+
+      val newLineFunc: String = "  "
+
+
+      text += parameters
+        .map {
+          case (className, parameter) =>
+            val key = ""
+            newLineFunc + s"$key${parameter.getParameterWithDefault(className)}"
+        }
+        .toList
+        .mkString(",\n")
+      if (implements.nonEmpty) {
+        implements.headOption.foreach {
+          cls =>
+            text += s") extends $cls "
+        }
+        val remains = implements.tail
+        if (remains.nonEmpty) {
+          text += s"${implements.mkString("with ", "with ", "")}"
+        }
+        text += "{\n"
+
+      } else {
+        text += s") {\n"
+      }
+      text += "}\n"
+
+      text += s"object $scalaResponse{\n"
+      //    text += s"implicit val jsonCodec: JsonValueCodec[$scalaResponse] = JsonCodecMaker.make[$scalaResponse](CodecMakerConfig.withFieldNameMapper(JsonCodecMaker.enforceCamelCase))"
+      text += s"   implicit val jsonCodec: JsonCodec[$scalaResponse] = DeriveJsonCodec.gen[$scalaResponse]"
+      text += "}\n"
     }
-    text += "}\n"
 
-    text += s"object $scalaResponse{\n"
-//    text += s"implicit val jsonCodec: JsonValueCodec[$scalaResponse] = JsonCodecMaker.make[$scalaResponse](CodecMakerConfig.withFieldNameMapper(JsonCodecMaker.enforceCamelCase))"
-    text += s"   implicit val jsonCodec: JsonCodec[$scalaResponse] = DeriveJsonCodec.gen[$scalaResponse]"
-    text += "}\n"
-
-    text.mkString
+    CodeData(code = text.toList, imports = imports.toList, filename = filename, isPackage = isPackage)
   }
 
   def getRequestZioReturn: String = s"ZIO[Any, FrameworkException, ${getRequestReturn}]"
@@ -480,10 +492,16 @@ case class APIEntry(
       scope = tokens(tokens.length - 2)
     scope
   }
-  def generateRequest: List[String] = {
+  def generateRequest: CodeData = {
     val doc = new ListBuffer[String]
-    // generating class documentation
+    val imports = new ListBuffer[String]
+        if (this.scope != "client")
+          imports += s"${Constants.namespaceName}.requests.ActionRequest"
+        this.extra.foreach { case (k, v) =>
+          imports += s"${Constants.namespaceName}.$k"
+        }
 
+    // generating class documentation
     doc ++= cookedDocumentation(true, this.parameters)
     val classDef =
       doc += "\n"
@@ -491,14 +509,15 @@ case class APIEntry(
 
     val newLineFunc: String = " " * classDef.length
 
-
     doc += this.parameters
       .map { parameter =>
         val key = ""
         newLineFunc + s"$key${parameter.getDefParameterNoVar}"
       }
-      .toList
-      .mkString(",\n") + s") extends ActionRequest ${implements.mkString("with ", "with ", "")}{\n"
+      .mkString(",\n") + s") extends ActionRequest "
+    if(implements.nonEmpty)
+      doc += implements.mkString("with ", "with ", "")
+    doc += "{\n"
     doc += s"""  def method:String="${methods.head}"\n\n"""
     doc ++= getDefUrlPath
     doc += "\n"
@@ -515,20 +534,8 @@ case class APIEntry(
 
     doc += "}\n"
     doc += "\n"
-//    doc += s"object ${scalaRequest} {\n"
-//    doc += s"implicit val jsonCodec: JsonValueCodec[$scalaRequest] = JsonCodecMaker.make[$scalaRequest](CodecMakerConfig.withFieldNameMapper(JsonCodecMaker.enforceCamelCase))"
-//    doc += "\n"
-//    doc += "  def apply(" + this.parameters.filter(p => p.required || (!p.required && p.scope == "uri")).
-//      map(p => s"${p.parameterName}:${p.toObjectParam}").toList.mkString(", ") + s"):$scalaRequest = {\n"
-//    doc += s"      new ${scalaRequest}(" + this.parameters.filter(p => p.required || (!p.required && p.scope == "uri")).
-//      map(p => s"${p.parameterName}=${p.parameterName}").toList.mkString(", ") + s")\n"
-//    doc += "    }\n"
-//    doc += "  // Custom Code On\n"
-//    doc += "  // Custom Code Off\n"
-//    doc += "}\n"
-//    doc += "\n"
-
-    doc.toList
+    val filename=s"$requestPackage/$scalaRequest.scala".substring(Constants.namespaceName.length+1)
+    CodeData(code=doc.toList, imports = imports.toList, filename = filename, isPackage = false)
   }
 
   def getDefQueryArgs: List[String] = {

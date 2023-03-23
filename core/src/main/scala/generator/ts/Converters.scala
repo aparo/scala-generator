@@ -4,9 +4,9 @@ import com.google.common.base.CaseFormat
 
 import scala.collection.mutable.ListBuffer
 
-case class CodeData(code: List[String] = Nil, imports: List[String] = Nil, filename: Option[String] = None)
+case class CodeData(code: List[String] = Nil, imports: List[String] = Nil, filename: String, isPackage:Boolean=false)
 object CodeData {
-  lazy val empty = CodeData(Nil, Nil)
+  lazy val empty = CodeData(Nil, Nil, "package.scala")
 }
 object Converters {
   lazy val SKIP_GENERATION  = Set(("ingest", "ProcessorContainer"))
@@ -19,11 +19,13 @@ object Converters {
     "boolean" -> "Boolean",
     "Array" -> "Chunk",
     "Field" -> "String",
-    "string" -> "String",
+    "string" -> "String",    "long" -> "Long",
+"Fields" -> "Chunk[String]",
     "boolean" -> "Boolean",
     "integer" -> "Int",
     "double" -> "Double",
     "Id" -> "String",
+    "DateTime" -> "LocalDateTime",
     "Name" -> "String",
     "UserDefinedValue" -> "Json",
     "ProcessorContainer" -> "Processor",
@@ -35,6 +37,8 @@ object Converters {
     "IndexName" -> "String",
     "IndexPattern" -> "String",
     "IndexPatterns" -> "Chunk[String]",
+    "VersionString" -> "String",
+    "VersionNumber" -> "Int",
   )
 
   implicit class ClassConverter(scalaClass: ScalaClass) {
@@ -114,7 +118,7 @@ object Converters {
           )
         }
 
-        CodeData(code = code.toList, imports = imports.toList, filename = Some(filename))
+        CodeData(code = code.toList, imports = imports.toList, filename = filename)
       } else CodeData.empty
     }
   }
@@ -123,16 +127,16 @@ object Converters {
     def getType: String =
       member.typ.map(_.toScalaType).getOrElse("Json")
     def toDef(implicit parserContext: ParserContext): CodeData =
-      CodeData(code = List(s"  def ${member.name.fixName.toCamel}: ${getType}"))
+      CodeData.empty.copy(code = List(s"  def ${member.name.fixName.toCamel}: ${getType}"))
 
     def toParam(implicit parserContext: ParserContext): CodeData = {
       val str          = member.name.fixName
       val name         = str.toCamel
       val defaultValue = if (member.isOptional) " = None" else ""
       if (str == name) {
-        CodeData(code = List(s"""$name: $getType$defaultValue"""))
+        CodeData.empty.copy(code = List(s"""$name: $getType$defaultValue"""))
       } else
-        CodeData(code = List(s"""@jsonField("$str") $name: $getType$defaultValue"""))
+        CodeData.empty.copy(code = List(s"""@jsonField("$str") $name: $getType$defaultValue"""))
     }
   }
 
@@ -159,6 +163,7 @@ object Converters {
         string.dropRight(1)
       } else string
       if (cleanValue == "if") { "`if`" }
+      else if (cleanValue == "override") { "`override`" }
       else cleanValue
     }
 

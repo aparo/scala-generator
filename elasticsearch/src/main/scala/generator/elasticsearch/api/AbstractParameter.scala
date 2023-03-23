@@ -10,7 +10,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core._
 import com.github.plokhotnyuk.jsoniter_scala.macros._
 import generator.ts.ParserContext
 import zio.json.ast.Json
-
+import generator.ts.Converters._
 sealed trait AbstractParameter {
   def `type`: String
 
@@ -55,6 +55,7 @@ sealed trait AbstractParameter {
     case "Json.Obj" => "Json.Obj"
     case "Boolean"|"Map[String,Json]"|"Chunk[String]"           => `type`
     case "String|Chunk[String]|None" => "Chunk[String]"
+    case s:String if s.startsWith("Map[String")            => `type`
     case ""           => "String"
   }
 
@@ -67,18 +68,11 @@ sealed trait AbstractParameter {
   lazy val multiple = CommonStrings.isMultiple(description) || `type` == "list" || subtype.getOrElse("") == "list" ||
     default.getOrElse(None).isInstanceOf[Seq[_]]
 
-  def toGoodName(value: String): String = value.stripPrefix("_") match {
-    case value: String if value.indexOf("_", 1) > 0 =>
-      val pos = value.indexOf('_', 1)
-      value.take(pos) + toGoodName(value.drop(pos + 1).capitalize)
-    case value => value
-  }
-
   def getParameterName(name: String): String = name match {
     case "type"   => "`type`"
     case "wait"   => "`wait`"
     case "Format" => "OutputFormat"
-    case value    => toGoodName(value)
+    case value    => value.toCamel
   }
 
   def getCookedDefault: String = getType match {
@@ -157,7 +151,7 @@ sealed trait AbstractParameter {
     } else if (this.`type` == "enum") {
       val enumT     = getParameterName(name)
       val enumClass = getParameterName(name.capitalize)
-      val enumCap   = toGoodName(name).capitalize
+      val enumCap   = name.toCamelUpper
       if (isEnumMultiple(enumCap)) {
         code += s"""    if($enumT.nonEmpty) {"""
         if (defaultIsValid) {

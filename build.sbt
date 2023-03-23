@@ -20,7 +20,7 @@ lazy val core = project
     libraryDependencies ++= Seq(
       Deps.javaDiff,
       Deps.ts,
-      // Deps.scalaFmt,
+      Deps.scalaFmt,
       Deps.fastparse,
       Deps.jsoniterScala,
       Deps.jsoniterScalaMacros,

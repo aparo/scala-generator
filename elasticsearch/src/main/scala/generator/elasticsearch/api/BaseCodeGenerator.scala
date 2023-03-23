@@ -16,6 +16,9 @@ trait BaseCodeGenerator {
 
   def devConfig: DevConfig
 
+  // DONE autoscaling
+  lazy val todoModule="ingest"
+
   lazy val root = devConfig.devRestAPIPath / "api"
 
   val managersImports = new mutable.HashMap[String, List[String]]
@@ -27,7 +30,7 @@ trait BaseCodeGenerator {
     .filter(os.isFile(_, followLinks = false))
     .filter(_.last.endsWith(".json"))
     .filter(f =>
-      f.toString.contains("autoscaling."))
+      f.last.startsWith(todoModule))
     .toList
 
   lazy val tsFiles = os
@@ -38,7 +41,7 @@ trait BaseCodeGenerator {
     .filterNot(_.toString.contains("mapping")) // we skip for now
     .filterNot(_.toString.contains("aggregations/pipeline.ts")) // we skip for now
     .filter(f =>
-      f.toString.contains("autoscaling") ||
+      f.toString.contains(todoModule) ||
       f.toString.contains("Base.ts") || // requests
       f.toString.contains("behaviors.ts")
     )

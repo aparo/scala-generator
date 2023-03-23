@@ -207,10 +207,18 @@ class ParserContext() {
   }
 
   def getRecursiveMembersWithParentName(typ: ScalaType): List[(String, ScalaClassMember)] = {
+    (typ match {
+      case UndefinedType => List.empty[(String, ScalaClassMember)]
+      case UnionType(_, _) => List.empty[(String, ScalaClassMember)]
+      case t:SimpleType =>
+        if (typ.toScalaType!=t.name) List(typ.toScalaType -> ScalaClassMember(name=t.name, level=TsProtectionLevel.Default, typ = Some(t), comments = Comments(None), isStatic = false)) else List.empty[(String, ScalaClassMember)]
+      case t:ScalaObjectType =>
+        t.members.flatMap(_.members).filter(p => typ.toScalaType!=p.name).map(v => typ.toScalaType -> v)
+    }) ++ (
     getClass(typ.toScalaType) match {
       case Some(value) => value.members.map(v => typ.toScalaType -> v) ++ value.implements.flatMap(getRecursiveMembersWithParentName)
       case None => Nil
-    }
+    })
   }
 
   lazy val MAP_DEFAULTS=Map(
