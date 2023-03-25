@@ -28,8 +28,8 @@ object Deps {
 }
 
 object Versions {
-  val zio     = "2.0.10"
-  val zioJson = "0.5.0"
+  val zio          = "2.0.10"
+  val zioJson      = "0.5.0"
   val zioJsonExtra = "0.4.2"
 
 }

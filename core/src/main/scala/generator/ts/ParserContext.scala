@@ -199,7 +199,7 @@ class ParserContext() {
   def getNamespaceClass(name: String): Option[ScalaClass] =
     scalaClasses.get(name)
 
-  def getImportForClassName(name:String):Option[String]={
+  def getImportForClassName(name: String): Option[String] =
     name match {
       case "RequestBase" => Some(s"import zio.elasticsearch.common.$name")
       case _ =>
@@ -210,60 +210,63 @@ class ParserContext() {
         } else None
     }
 
-  }
-
-  def getRecursiveMembers(typ:ScalaType):List[ScalaClassMember]={
+  def getRecursiveMembers(typ: ScalaType): List[ScalaClassMember] =
     getClass(typ.toScalaType) match {
       case Some(value) => value.members ++ value.implements.flatMap(getRecursiveMembers)
-      case None => Nil
+      case None        => Nil
     }
-  }
 
-  def getRecursiveMembersWithParentName(typ: ScalaType): List[(String, ScalaClassMember)] = {
+  def getRecursiveMembersWithParentName(typ: ScalaType): List[(String, ScalaClassMember)] =
     (typ match {
-      case UndefinedType => List.empty[(String, ScalaClassMember)]
+      case UndefinedType   => List.empty[(String, ScalaClassMember)]
       case UnionType(_, _) => List.empty[(String, ScalaClassMember)]
-      case t:SimpleType =>
-        if (typ.toScalaType!=t.name) List(typ.toScalaType -> ScalaClassMember(name=t.name, level=TsProtectionLevel.Default, typ = Some(t), comments = Comments(None), isStatic = false)) else List.empty[(String, ScalaClassMember)]
-      case t:ScalaObjectType =>
-        t.members.flatMap(_.members).filter(p => typ.toScalaType!=p.name).map(v => typ.toScalaType -> v)
-    }) ++ (
-    getClass(typ.toScalaType) match {
-      case Some(value) => value.members.map(v => typ.toScalaType -> v) ++ value.implements.flatMap(getRecursiveMembersWithParentName)
+      case t: SimpleType =>
+        if (typ.toScalaType != t.name)
+          List(
+            typ.toScalaType -> ScalaClassMember(
+              name = t.name,
+              level = TsProtectionLevel.Default,
+              typ = Some(t),
+              comments = Comments(None),
+              isStatic = false,
+            ),
+          )
+        else List.empty[(String, ScalaClassMember)]
+      case t: ScalaObjectType =>
+        t.members.flatMap(_.members).filter(p => typ.toScalaType != p.name).map(v => typ.toScalaType -> v)
+    }) ++ (getClass(typ.toScalaType) match {
+      case Some(value) =>
+        value.members.map(v => typ.toScalaType -> v) ++ value.implements.flatMap(getRecursiveMembersWithParentName)
       case None => Nil
     })
-  }
 
   lazy val MAP_DEFAULTS = Map(
-    ("", "acknowledged") -> "true"
+    ("", "acknowledged") -> "true",
   )
 
-  def getDefaultParameter(clsName:String, name:String, typ:String):String= {
-    if(MAP_DEFAULTS.contains(clsName -> name)){
+  def getDefaultParameter(clsName: String, name: String, typ: String): String =
+    if (MAP_DEFAULTS.contains(clsName -> name)) {
       MAP_DEFAULTS(clsName -> name)
     } else {
       typ match {
         case "Boolean" => "true"
-        case s:String if s.startsWith("Chunk[")=> "Chunk.empty"+s.substring("Chunk".length)
-        case s:String if s.startsWith("Map[")=> "Map.empty"+s.substring("Map".length)
-        case s:String if s.startsWith("List[")=> "Nil"
+        case s: String if s.startsWith("Chunk[") => "Chunk.empty" + s.substring("Chunk".length)
+        case s: String if s.startsWith("Map[")   => "Map.empty" + s.substring("Map".length)
+        case s: String if s.startsWith("List[")  => "Nil"
       }
     }
-  }
 
   lazy val MAP_VARIABLES = Map(
-    ("Map[String,Pipeline]") -> "pipelines"
+    "Map[String,Pipeline]" -> "pipelines",
   )
 
-  def getVariableName(name:String):String={
+  def getVariableName(name: String): String =
     MAP_VARIABLES.getOrElse(name, name)
-  }
 
   lazy val REQUEST_TYPED_BODY = Map(
-    ("PutPipelineRequest" -> ("Pipeline" -> "a Pipeline"))
+    "PutPipelineRequest" -> ("Pipeline" -> "a Pipeline"),
   )
 
-  def getTypedBody(scalaRequest:String):Option[(String,String)]={
+  def getTypedBody(scalaRequest: String): Option[(String, String)] =
     REQUEST_TYPED_BODY.get(scalaRequest)
-  }
 }

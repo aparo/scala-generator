@@ -52,14 +52,14 @@ sealed trait AbstractParameter {
           "Double"
       }
 
-    case "Json.Obj"|"Json" => `type`
-    case "Boolean"|"Map[String,Json]"|"Chunk[String]"           => `type`
-    case "String|Chunk[String]|None" => "Chunk[String]"
-    case s:String if s.startsWith("Map[String")            => `type`
-    case s:String if s.endsWith("RequestBody")            => `type`
-    case s:String if s.startsWith("Chunk[")            => `type`
-    case "Pipeline"           => "Pipeline"
-    case ""           => "String"
+    case "Json.Obj" | "Json"                              => `type`
+    case "Boolean" | "Map[String,Json]" | "Chunk[String]" => `type`
+    case "String|Chunk[String]|None"                      => "Chunk[String]"
+    case s: String if s.startsWith("Map[String") => `type`
+    case s: String if s.endsWith("RequestBody")  => `type`
+    case s: String if s.startsWith("Chunk[")     => `type`
+    case "Pipeline" => "Pipeline"
+    case ""         => "String"
   }
 
   def requiredToString: String = `type` match {
@@ -76,7 +76,7 @@ sealed trait AbstractParameter {
     case "wait"   => "`wait`"
     case "Format" => "OutputFormat"
     case value    => parserContext.getVariableName(value)
-    //value.toCamel
+    // value.toCamel
   }
 
   def getCookedDefault: String = getType match {
@@ -248,18 +248,16 @@ case class CallParameter(
 
   def getDefParameterNoVar(implicit parserContext: ParserContext) = s"$parameterName: $toQueryParam"
 
-  def getDefault(clsName:String)(implicit parserContext: ParserContext):String={
+  def getDefault(clsName: String)(implicit parserContext: ParserContext): String =
     this.default match {
       case Some(value) => value.toJson
-      case None => parserContext.getDefaultParameter(clsName, this.name, this.`type`)
+      case None        => parserContext.getDefaultParameter(clsName, this.name, this.`type`)
     }
-  }
 
-  def getParameterWithDefault(clsName:String)(implicit parserContext: ParserContext):String = {
-  if(required) {
+  def getParameterWithDefault(clsName: String)(implicit parserContext: ParserContext): String =
+    if (required) {
       s"$parameterName: $toQueryParam = ${getDefault(clsName)}"
     } else s"$parameterName: $toQueryParam"
-  }
 
   def parameterName(implicit parserContext: ParserContext): String = this.getParameterName(this.name)
 

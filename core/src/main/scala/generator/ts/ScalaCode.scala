@@ -8,17 +8,16 @@ import scala.collection.mutable.ListBuffer
 
 sealed trait ScalaCode {
   self =>
-  def members:    List[ScalaClassMember]
+  def members: List[ScalaClassMember]
 }
 
 case class ScalaImport(from: String, items: List[String]) extends ScalaCode {
   override def members: List[ScalaClassMember] = Nil
 }
 
-case class ScalaClassConstructor(comments: Comments) extends ScalaCode{
+case class ScalaClassConstructor(comments: Comments) extends ScalaCode {
   override def members: List[ScalaClassMember] = Nil
 }
-
 
 sealed trait ScalaType {
   def isRequired: Boolean
@@ -31,7 +30,6 @@ sealed trait ScalaType {
 }
 
 case object UndefinedType extends ScalaType {
-
 
   override def toScalaType: String = "None"
 
@@ -98,7 +96,6 @@ case class ScalaObjectType(
 
   override def toScalaType: String = "Klass"
 
-
 }
 
 //   case class ScalaTypeAlias(comments: Comments, name:String) extends ScalaCode
@@ -116,10 +113,9 @@ case class ScalaClassMember(
   override def members: List[ScalaClassMember] = List(this)
 }
 
-case class ScalaClassMethod(name: String, level: TsProtectionLevel, comments: Comments) extends ScalaCode{
+case class ScalaClassMethod(name: String, level: TsProtectionLevel, comments: Comments) extends ScalaCode {
   override def members: List[ScalaClassMember] = Nil
 }
-
 
 case class ScalaClass(
     namespace:  String,
@@ -133,12 +129,10 @@ case class ScalaClass(
     methods:    List[ScalaClassMethod] = Nil,
     jsLocation: Option[JsLocation] = None,
     codePath:   CodePath,
-) extends ScalaCode {
-}
-case class ScalaEnumMember(name: String, expr: Option[TsExpr] = None, comments: Comments) extends ScalaCode{
+) extends ScalaCode {}
+case class ScalaEnumMember(name: String, expr: Option[TsExpr] = None, comments: Comments) extends ScalaCode {
   override def members: List[ScalaClassMember] = Nil
 }
-
 
 case class ScalaEnum(
     name:         String,
@@ -147,10 +141,9 @@ case class ScalaEnum(
     isConst:      Boolean = false,
     isValue:      Boolean = false,
     exportedFrom: Option[ScalaType] = None,
-    values:      List[ScalaEnumMember] = Nil,
+    values:       List[ScalaEnumMember] = Nil,
     jsLocation:   JsLocation,
     codePath:     CodePath,
-) extends ScalaCode{
+) extends ScalaCode {
   override def members: List[ScalaClassMember] = Nil
 }
-

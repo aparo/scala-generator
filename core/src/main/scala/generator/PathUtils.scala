@@ -153,9 +153,9 @@ object PathUtils {
     *   the file to be saved
     */
   def saveScalaFile(content: String, file: Path): Unit = {
-     val result = Try {
-       org.scalafmt.Scalafmt.format(content).get
-     }.toOption.getOrElse(content)
+    val result = Try {
+      org.scalafmt.Scalafmt.format(content).get
+    }.toOption.getOrElse(content)
     PathUtils.updateFileIfNeeded(file, result)
 //    logger.info(s"Generated $file")
   }

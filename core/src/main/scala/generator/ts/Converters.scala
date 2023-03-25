@@ -4,7 +4,7 @@ import com.google.common.base.CaseFormat
 
 import scala.collection.mutable.ListBuffer
 
-case class CodeData(code: List[String] = Nil, imports: List[String] = Nil, filename: String, isPackage:Boolean=false)
+case class CodeData(code: List[String] = Nil, imports: List[String] = Nil, filename: String, isPackage: Boolean = false)
 object CodeData {
   lazy val empty = CodeData(Nil, Nil, "package.scala")
 }
@@ -19,8 +19,9 @@ object Converters {
     "boolean" -> "Boolean",
     "Array" -> "Chunk",
     "Field" -> "String",
-    "string" -> "String",    "long" -> "Long",
-"Fields" -> "Chunk[String]",
+    "string" -> "String",
+    "long" -> "Long",
+    "Fields" -> "Chunk[String]",
     "boolean" -> "Boolean",
     "integer" -> "Int",
     "double" -> "Double",
@@ -40,7 +41,6 @@ object Converters {
     "VersionString" -> "String",
     "VersionNumber" -> "Int",
   )
-
 
   implicit class ClassConverter(scalaClass: ScalaClass) {
     def getParent(implicit parserContext: ParserContext): Option[ScalaClass] =
@@ -130,7 +130,7 @@ object Converters {
       val name = scalaClass.name.fixName
       DISCRIMINATOR_END.find(p => name.endsWith(p)) match {
         case Some(value) => name.dropRight(value.length).toSnake
-        case None => name.toSnake
+        case None        => name.toSnake
       }
     }
 
@@ -142,30 +142,30 @@ object Converters {
     def toCode(implicit parserContext: ParserContext): CodeData = {
       val tupleNs = (scalaClass.namespace, scalaClass.name)
       if (!SKIP_GENERATION.contains(tupleNs)) {
-        val code = new ListBuffer[String]
+        val code    = new ListBuffer[String]
         val imports = new ListBuffer[String]
         imports += "import zio.json._"
-        val name = REMAP_CLASSES.getOrElse(tupleNs, scalaClass.name)
+        val name     = REMAP_CLASSES.getOrElse(tupleNs, scalaClass.name)
         var filename = s"${scalaClass.namespace}/$name.scala"
-          code += s"final case class $name ("
-          val members = new ListBuffer[String]
-          scalaClass.members.foreach { member =>
-            member match {
-              case m:ScalaClassMember =>
-                val cd = m.toParam
-                imports ++= cd.imports
-                members ++= cd.code
-              case _ =>
-            }
+        code += s"final case class $name ("
+        val members = new ListBuffer[String]
+        scalaClass.members.foreach { member =>
+          member match {
+            case m: ScalaClassMember =>
+              val cd = m.toParam
+              imports ++= cd.imports
+              members ++= cd.code
+            case _ =>
           }
-          code += members.mkString(", ")
-          code += s")"
-          code ++= List(
-            "",
-            s"object $name {",
-            s"  implicit val jsonCodec:JsonCodec[$name]= DeriveJsonCodec.gen[$name]",
-            "}",
-          )
+        }
+        code += members.mkString(", ")
+        code += s")"
+        code ++= List(
+          "",
+          s"object $name {",
+          s"  implicit val jsonCodec:JsonCodec[$name]= DeriveJsonCodec.gen[$name]",
+          "}",
+        )
 
         CodeData(code = code.toList, imports = imports.toList, filename = filename)
       } else CodeData.empty

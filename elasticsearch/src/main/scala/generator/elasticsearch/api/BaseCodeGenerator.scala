@@ -17,7 +17,7 @@ trait BaseCodeGenerator {
   def devConfig: DevConfig
 
   // DONE autoscaling
-  lazy val todoModule="ingest"
+  lazy val todoModule = "ingest"
 
   lazy val root = devConfig.devRestAPIPath / "api"
 
@@ -29,8 +29,7 @@ trait BaseCodeGenerator {
     .walk(root)
     .filter(os.isFile(_, followLinks = false))
     .filter(_.last.endsWith(".json"))
-    .filter(f =>
-      f.last.startsWith(todoModule))
+    .filter(f => f.last.startsWith(todoModule))
     .toList
 
   lazy val tsFiles = os
@@ -42,8 +41,8 @@ trait BaseCodeGenerator {
     .filterNot(_.toString.contains("aggregations/pipeline.ts")) // we skip for now
     .filter(f =>
       f.toString.contains(todoModule) ||
-      f.toString.contains("Base.ts") || // requests
-      f.toString.contains("behaviors.ts")
+        f.toString.contains("Base.ts") || // requests
+        f.toString.contains("behaviors.ts"),
     )
     .toList
 
@@ -52,18 +51,20 @@ trait BaseCodeGenerator {
 
   def run(): ZIO[Any, Throwable, Unit]
 
-  lazy val FIX_API_NAMES=Map("ingest.simulate" ->"ingest.simulate_pipeline")
+  lazy val FIX_API_NAMES = Map("ingest.simulate" -> "ingest.simulate_pipeline")
 
-  protected def processFile(name: os.Path)(implicit parserContext: ParserContext): ZIO[Any, Throwable, Seq[APIEntry]] =
+  protected def processFile(
+      name:                 os.Path,
+  )(implicit parserContext: ParserContext): ZIO[Any, Throwable, Seq[ApiEntryTyped]] =
     if (name.baseName.startsWith("_")) ZIO.succeed(Nil)
     else {
       for {
         _ <- ZIO.debug(s"Processing $name")
-        obj <- ZIO.attempt({
-          readFromStream[Map[String, APIEntry]](name.getInputStream).map{
-            v => v._2.copy(name = FIX_API_NAMES.getOrElse(v._1, v._1)).parse
+        obj <- ZIO.attempt {
+          readFromStream[Map[String, APIEntry]](name.getInputStream).map { v =>
+            ApiEntryTyped.parse(v._2.copy(name = FIX_API_NAMES.getOrElse(v._1, v._1)))
           }
-        })
+        }
       } yield obj.toSeq
     }
 
