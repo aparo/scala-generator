@@ -41,6 +41,7 @@ object Converters {
     "VersionNumber" -> "Int",
   )
 
+
   implicit class ClassConverter(scalaClass: ScalaClass) {
     def getParent(implicit parserContext: ParserContext): Option[ScalaClass] =
       scalaClass.parent.flatMap(p => parserContext.getClass(p.toScalaType))
@@ -117,6 +118,54 @@ object Converters {
             "}",
           )
         }
+
+        CodeData(code = code.toList, imports = imports.toList, filename = filename)
+      } else CodeData.empty
+    }
+  }
+
+  implicit class ClassObjectConverter(scalaClass: ScalaObjectType) {
+
+    def getDiscriminator: String = {
+      val name = scalaClass.name.fixName
+      DISCRIMINATOR_END.find(p => name.endsWith(p)) match {
+        case Some(value) => name.dropRight(value.length).toSnake
+        case None => name.toSnake
+      }
+    }
+
+    def isSealed: Boolean = {
+      val tupleNs = (scalaClass.namespace, scalaClass.name)
+      SEALED_CLASSES.contains(tupleNs)
+    }
+
+    def toCode(implicit parserContext: ParserContext): CodeData = {
+      val tupleNs = (scalaClass.namespace, scalaClass.name)
+      if (!SKIP_GENERATION.contains(tupleNs)) {
+        val code = new ListBuffer[String]
+        val imports = new ListBuffer[String]
+        imports += "import zio.json._"
+        val name = REMAP_CLASSES.getOrElse(tupleNs, scalaClass.name)
+        var filename = s"${scalaClass.namespace}/$name.scala"
+          code += s"final case class $name ("
+          val members = new ListBuffer[String]
+          scalaClass.members.foreach { member =>
+            member match {
+              case m:ScalaClassMember =>
+                val cd = m.toParam
+                imports ++= cd.imports
+                members ++= cd.code
+              case _ =>
+            }
+          }
+          code += members.mkString(", ")
+          code += s")"
+          code ++= List(
+            "",
+            s"object $name {",
+            s"  implicit val jsonCodec:JsonCodec[$name]= DeriveJsonCodec.gen[$name]",
+            "}",
+          )
 
         CodeData(code = code.toList, imports = imports.toList, filename = filename)
       } else CodeData.empty

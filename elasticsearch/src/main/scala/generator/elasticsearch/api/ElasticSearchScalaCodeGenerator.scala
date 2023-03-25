@@ -56,19 +56,20 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
       requests <- ZIO.foreach(apis) {apiEntry => ZIO.attempt(apiEntry.generateRequest) }
         // generate Response
       responses <- ZIO.foreach(apis) {apiEntry =>ZIO.attempt(apiEntry.generateResponse) }
+      extraAPIClasses = apis.flatMap(_.extraClassCodes)
 
-        zioAccessManagers <- generateApis(apis)
-      _ <- generateManagers()
-//      _ <- ZIO.attempt(generateZioAccessors(zioAccessManagers))
-      _ <- generateClientActions(destDir, apis)
-      _ <- generateClientActionResolver(destDir, apis)
-      _ <- generateEnumeration()
+//        zioAccessManagers <- generateApis(apis)
+//      _ <- generateManagers()
+////      _ <- ZIO.attempt(generateZioAccessors(zioAccessManagers))
+//      _ <- generateClientActions(destDir, apis)
+//      _ <- generateClientActionResolver(destDir, apis)
+//      _ <- generateEnumeration()
 // generating classes
       typesCodes = parserContext.scalaClasses
         .filterNot(_._1.endsWith("Response"))
         .filterNot(_._1.endsWith("Request"))
         .map(_._2.toCode)
-      fileCodes=(requests ++ responses ++ typesCodes)
+      fileCodes=(requests ++ responses ++ typesCodes ++ extraAPIClasses)
         .groupBy(_.filename
 //          .getOrElse("common/common.scala")
           .replace(".", "/")

@@ -52,10 +52,13 @@ sealed trait AbstractParameter {
           "Double"
       }
 
-    case "Json.Obj" => "Json.Obj"
+    case "Json.Obj"|"Json" => `type`
     case "Boolean"|"Map[String,Json]"|"Chunk[String]"           => `type`
     case "String|Chunk[String]|None" => "Chunk[String]"
     case s:String if s.startsWith("Map[String")            => `type`
+    case s:String if s.endsWith("RequestBody")            => `type`
+    case s:String if s.startsWith("Chunk[")            => `type`
+    case "Pipeline"           => "Pipeline"
     case ""           => "String"
   }
 
@@ -68,11 +71,12 @@ sealed trait AbstractParameter {
   lazy val multiple = CommonStrings.isMultiple(description) || `type` == "list" || subtype.getOrElse("") == "list" ||
     default.getOrElse(None).isInstanceOf[Seq[_]]
 
-  def getParameterName(name: String): String = name match {
+  def getParameterName(name: String)(implicit parserContext: ParserContext): String = name match {
     case "type"   => "`type`"
     case "wait"   => "`wait`"
     case "Format" => "OutputFormat"
-    case value    => value.toCamel
+    case value    => parserContext.getVariableName(value)
+    //value.toCamel
   }
 
   def getCookedDefault: String = getType match {
@@ -89,7 +93,7 @@ sealed trait AbstractParameter {
 
   def isEnumMultiple(name: String): Boolean = name.endsWith("s") && !notMultipleEnums.contains(name)
 
-  def toQueryParam(name: String): String = {
+  def toQueryParam(name: String)(implicit parserContext: ParserContext): String = {
     val code = new ListBuffer[String]
     if (multiple && this.`type` != "enum") {
       if (defaultIsValid) {
@@ -141,7 +145,7 @@ sealed trait AbstractParameter {
     code.mkString
   }
 
-  def toBodyCode(name: String): String = {
+  def toBodyCode(name: String)(implicit parserContext: ParserContext): String = {
     val code = new ListBuffer[String]
     if (multiple) {
       code += s"""    if(${getParameterName(name)}.nonEmpty){
@@ -211,7 +215,7 @@ sealed trait AbstractParameter {
     case value  => value
   }
 
-  def getEnum(name: String): Map[String, String] =
+  def getEnum(name: String)(implicit parserContext: ParserContext): Map[String, String] =
     `type` match {
       case "enum" =>
         val newName = getParameterName(name.capitalize)
@@ -238,11 +242,11 @@ case class CallParameter(
     scope:       String = "query",
     subtype:     Option[String] = None,
 ) extends AbstractParameter {
-  def getCookedDocumentation: String = s" * @param $parameterName $description"
+  def getCookedDocumentation(implicit parserContext: ParserContext): String = s" * @param $parameterName $description"
 
-  def getDefParameter = s"var $parameterName : $toQueryParam"
+  def getDefParameter(implicit parserContext: ParserContext) = s"var $parameterName : $toQueryParam"
 
-  def getDefParameterNoVar = s"$parameterName: $toQueryParam"
+  def getDefParameterNoVar(implicit parserContext: ParserContext) = s"$parameterName: $toQueryParam"
 
   def getDefault(clsName:String)(implicit parserContext: ParserContext):String={
     this.default match {
@@ -257,13 +261,13 @@ case class CallParameter(
     } else s"$parameterName: $toQueryParam"
   }
 
-  def parameterName: String = this.getParameterName(this.name)
+  def parameterName(implicit parserContext: ParserContext): String = this.getParameterName(this.name)
 
-  def toQueryParam: String = toQueryParam(this.name)
+  def toQueryParam(implicit parserContext: ParserContext): String = toQueryParam(this.name)
 
-  def toObjectParam: String = toQueryParam(this.name).split("=")(0).trim()
+  def toObjectParam(implicit parserContext: ParserContext): String = toQueryParam(this.name).split("=")(0).trim()
 
-  def toBodyCode: String = toBodyCode(this.name)
+  def toBodyCode(implicit parserContext: ParserContext): String = toBodyCode(this.name)
 
 }
 

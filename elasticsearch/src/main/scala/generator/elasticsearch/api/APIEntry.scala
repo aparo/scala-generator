@@ -6,11 +6,11 @@ package generator.elasticsearch.api
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable
-import java.io.{File, FileWriter}
 import com.github.plokhotnyuk.jsoniter_scala.core._
 import com.github.plokhotnyuk.jsoniter_scala.macros._
 import generator.elasticsearch.Constants
-import generator.ts.{CodeData, ParserContext, ScalaClassMember}
+import generator.ts.{CodeData, ParserContext, ScalaClassMember, ScalaObjectType, SimpleType, UndefinedType, UnionType}
+import generator.ts.Converters._
 case class APIDocumetation(url: String, description: String)
 object APIDocumetation {
   implicit val codec: JsonValueCodec[APIDocumetation] = JsonCodecMaker.make[APIDocumetation]
@@ -34,6 +34,8 @@ case class APIEntry(
   var implicits:          List[String]        = List.empty[String]
   private var parameters: List[CallParameter] = List.empty[CallParameter]
   private var implements: List[String] = List.empty[String]
+  private var requestBody:       String              = "Json"
+  var extraClassCodes:List[CodeData]=List.empty[CodeData]
 
   // from indices.get_field_mapping -> IndicesGetFieldMapping
 //  val className: String = {
@@ -41,13 +43,13 @@ case class APIEntry(
 //    APIEntry.mappingNames.getOrElse(n, n)
 //  }
   // from indices.get_field_mapping -> GetFieldMapping
-  val className: String = {
+  lazy val className: String = {
     val n = name.split('.').drop(1).flatMap(_.split('_')).map(_.capitalize).mkString
     APIEntry.mappingNames.getOrElse(n, n)
   }
 
-  val scalaRequest:  String = className + "Request"
-  val scalaResponse: String = className + "Response"
+  lazy val scalaRequest:  String = className + "Request"
+  lazy val scalaResponse: String = className + "Response"
 
   def toCallParameter(p: ScalaClassMember): CallParameter = CallParameter(
     name=p.name,
@@ -106,10 +108,10 @@ case class APIEntry(
     val requiredPathsCount = requiredPaths.count(p => partRequired(p))
     val hasBody            = this.body.isDefined
     val bodyType = this.body match {
-      case None => "Json.Obj"
+      case None => "Json"
       case Some(b) =>
         b.serialize match {
-          case ""     => "Json.Obj"
+          case ""     => "Json"
           case "bulk" => "list"
         }
     }
@@ -140,7 +142,7 @@ case class APIEntry(
           required = partRequired(p),
           scope = "uri",
         )
-      }.toList
+      }
 
       if (requiredPathsCount > 0 && hasBody) {
         parameters += CallParameter(
@@ -165,7 +167,7 @@ case class APIEntry(
       bodyDone = true
     }
     parameters ++= this.url.params
-      .filterNot { case (name, value) =>
+      .filterNot { case (name, _) =>
         requiredPaths.contains(name)
       }
       .map { case (name, value) =>
@@ -203,6 +205,90 @@ case class APIEntry(
     // retrieve typed data
     parserContext.getNamespaceClass(s"${scope}.requests.${scalaRequest}").foreach{
       rqTyped =>
+        rqTyped.members.foreach{
+          case sc if sc.name=="path_parts" =>
+            sc.typ.getOrElse(UndefinedType) match {
+              case UndefinedType => ()
+              case UnionType(_, _) => ()
+              case st:SimpleType =>
+                if(!para2.exists(_.name==st.name))
+                  para2 += CallParameter(name=st.name, `type`=st.toScalaType, description = "", required = st.isRequired, scope="uri")
+              case ScalaObjectType(_, _, _, members, _, _) =>
+                members.foreach{
+                  st1 =>
+                    st1.members.foreach{
+                      st =>
+                        if (!para2.exists(_.name == st.name))
+                          para2 += toCallParameter(st).copy(scope="uri")
+                    }
+                }
+            }
+          case sc if sc.name=="query_parameters" =>
+            sc.typ.getOrElse(UndefinedType) match {
+              case UndefinedType => ()
+              case UnionType(_, _) => ()
+              case st: SimpleType =>
+                if (!para2.exists(_.name == st.name))
+                  para2 += CallParameter(name = st.name, `type` = st.toScalaType, description = "", required = st.isRequired, scope = "query")
+              case ScalaObjectType(_, _, _, members, _, _) =>
+                members.foreach {
+                  st1 =>
+                    st1.members.foreach {
+                      st =>
+                        if (!para2.exists(_.name == st.name))
+                          para2 += toCallParameter(st).copy(scope = "query")
+                    }
+                }
+            }
+          case sc if sc.name=="body" =>
+            parserContext.getTypedBody(scalaRequest) match {
+              case Some((cls,desc)) =>
+                // we update body
+              this.requestBody=cls
+                para2.find(_.name == "body") match {
+                  case Some(value) => para2 -= value
+                    para2 += value.copy(`type`=cls, description = desc)
+                  case None =>
+                    para2 += CallParameter(
+                      "body",
+                      cls,
+                      desc,
+                      required = this.body.get.required,
+                      scope = "body",
+                    )
+                }
+
+              case None =>
+                // we create a request body
+              val rqBody=scalaRequest+"Body"
+              sc.typ.foreach{
+                scalatype =>
+                  scalatype match {
+                    case st:ScalaObjectType =>
+                      val cd = st.copy(name = rqBody, namespace = this.requestPackage.replace("zio.elasticsearch.", "")).toCode
+                      if (cd != CodeData.empty) {
+                        extraClassCodes ::= cd.copy(imports = List(s"import $basePackage._")::: cd.imports)
+                        this.requestBody=rqBody
+                        para2.find(_.name == "body") match {
+                          case Some(value) => para2 -= value
+                            para2 += value.copy(`type` = rqBody)
+                          case None =>
+                            para2 += CallParameter(
+                              "body",
+                              rqBody,
+                              s"a $rqBody",
+                              required = this.body.get.required,
+                              scope = "body",
+                            )
+                        }
+
+                      }
+
+                  }
+
+              }
+            }
+        }
         implements = if (rqTyped.implements.isEmpty) Nil else {
           rqTyped.implements.map(_.toScalaType)
         }
@@ -235,7 +321,7 @@ case class APIEntry(
 
   def clientName: String = if (scope == "client") "this" else "client"
 
-  def getClientZIOAccessorsCalls: String = {
+  def getClientZIOAccessorsCalls(implicit parserContext: ParserContext): String = {
     val text     = new ListBuffer[String]
     val funcName = toGoodName(name.split("\\.").last)
     // generating class documentation
@@ -266,7 +352,7 @@ case class APIEntry(
     text.mkString
   }
 
-  def getClientCalls: String = {
+  def getClientCalls(implicit parserContext: ParserContext): String = {
     val text     = new ListBuffer[String]
     val funcName = toGoodName(name.split("\\.").last)
     // generating class documentation
@@ -303,7 +389,7 @@ case class APIEntry(
     text.mkString
   }
 
-  def getClientNativeCalls: String = {
+  def getClientNativeCalls(implicit parserContext: ParserContext): String = {
     val text     = new ListBuffer[String]
     val funcName = toGoodName(name.split("\\.").last)
     // generating class documentation
@@ -396,7 +482,7 @@ case class APIEntry(
                case None =>
              }
          }
-        para2 ++= recursiveFields.map(p => p._1 -> toCallParameter(p._2))
+        para2 ++= recursiveFields.map(p => p._1 -> toCallParameter(if(parserContext.MAP_VARIABLES.contains(p._1)) p._2.copy(name=parserContext.MAP_VARIABLES(p._1)) else p._2))
     }
 
 
@@ -463,7 +549,7 @@ case class APIEntry(
         case _           => scalaResponse
       }
 
-  def cookedDocumentation(withParameters:Boolean, parameters: List[CallParameter]): List[String] = {
+  def cookedDocumentation(withParameters:Boolean, parameters: List[CallParameter])(implicit parserContext: ParserContext): List[String] = {
     val doc = new ListBuffer[String]
     doc += "/*\n"
     doc += " * " + this.documentation.description + "\n"
@@ -492,13 +578,13 @@ case class APIEntry(
       scope = tokens(tokens.length - 2)
     scope
   }
-  def generateRequest: CodeData = {
+  def generateRequest(implicit parserContext: ParserContext): CodeData = {
     val doc = new ListBuffer[String]
     val imports = new ListBuffer[String]
         if (this.scope != "client")
-          imports += s"${Constants.namespaceName}.requests.ActionRequest"
+          imports += s"import ${Constants.namespaceName}.requests.ActionRequest"
         this.extra.foreach { case (k, v) =>
-          imports += s"${Constants.namespaceName}.$k"
+          imports += s"import ${Constants.namespaceName}.$k"
         }
 
     // generating class documentation
@@ -514,14 +600,24 @@ case class APIEntry(
         val key = ""
         newLineFunc + s"$key${parameter.getDefParameterNoVar}"
       }
-      .mkString(",\n") + s") extends ActionRequest "
-    if(implements.nonEmpty)
+      .mkString(",\n") + s") extends ActionRequest[$requestBody] "
+    if(implements.nonEmpty) {
       doc += implements.mkString("with ", "with ", "")
+      implements.foreach{
+        impl =>
+          parserContext.getImportForClassName(impl) match {
+            case Some(value) => imports += value
+            case None => println(s"Namespace for $impl not found")
+          }
+      }
+    }
     doc += "{\n"
     doc += s"""  def method:String="${methods.head}"\n\n"""
     doc ++= getDefUrlPath
     doc += "\n"
-    doc ++= getDefQueryArgs
+    val qargs=getDefQueryArgs
+    doc ++= qargs._1
+    imports ++= qargs._2
     doc += "\n"
     if (!hasBody) {
       doc += """  def body:Json=Json.Null"""
@@ -538,7 +634,8 @@ case class APIEntry(
     CodeData(code=doc.toList, imports = imports.toList, filename = filename, isPackage = false)
   }
 
-  def getDefQueryArgs: List[String] = {
+  def getDefQueryArgs(implicit parserContext: ParserContext): (List[String],List[String]) = {
+    val imports=List("import scala.collection.mutable")
     val parameters = this.parameters.filterNot(_.required).filterNot(_.scope == "uri")
     if (parameters.nonEmpty) {
       val text = new ListBuffer[String]
@@ -555,9 +652,9 @@ case class APIEntry(
 
       text += "    queryArgs.toMap\n"
       text += "  }\n"
-      text.toList
+      (text.toList,imports)
     } else {
-      List("def queryArgs: Map[String, String] = Map.empty[String, String]\n")
+      (List("def queryArgs: Map[String, String] = Map.empty[String, String]\n"), Nil)
     }
 
   }

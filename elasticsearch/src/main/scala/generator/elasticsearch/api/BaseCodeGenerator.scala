@@ -52,6 +52,8 @@ trait BaseCodeGenerator {
 
   def run(): ZIO[Any, Throwable, Unit]
 
+  lazy val FIX_API_NAMES=Map("ingest.simulate" ->"ingest.simulate_pipeline")
+
   protected def processFile(name: os.Path)(implicit parserContext: ParserContext): ZIO[Any, Throwable, Seq[APIEntry]] =
     if (name.baseName.startsWith("_")) ZIO.succeed(Nil)
     else {
@@ -59,7 +61,7 @@ trait BaseCodeGenerator {
         _ <- ZIO.debug(s"Processing $name")
         obj <- ZIO.attempt({
           readFromStream[Map[String, APIEntry]](name.getInputStream).map{
-            v => v._2.copy(name = v._1).parse
+            v => v._2.copy(name = FIX_API_NAMES.getOrElse(v._1, v._1)).parse
           }
         })
       } yield obj.toSeq

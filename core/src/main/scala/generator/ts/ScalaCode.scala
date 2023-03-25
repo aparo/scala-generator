@@ -4,6 +4,8 @@ import org.scalablytyped.converter.internal.ts.TsProtectionLevel
 import org.scalablytyped.converter.internal.ts._
 import org.scalablytyped.converter.internal._
 
+import scala.collection.mutable.ListBuffer
+
 sealed trait ScalaCode {
   self =>
   def members:    List[ScalaClassMember]
@@ -30,6 +32,7 @@ sealed trait ScalaType {
 
 case object UndefinedType extends ScalaType {
 
+
   override def toScalaType: String = "None"
 
   override def isRequired: Boolean = false
@@ -54,6 +57,7 @@ case class UnionType(types: List[ScalaType], isNullable: Boolean = false) extend
       s"Option[$union]"
     } else union
   }
+
 }
 
 case class SimpleType(
@@ -93,6 +97,8 @@ case class ScalaObjectType(
   override def setNullable(nullable: Boolean): ScalaType = copy(isNullable = nullable)
 
   override def toScalaType: String = "Klass"
+
+
 }
 
 //   case class ScalaTypeAlias(comments: Comments, name:String) extends ScalaCode

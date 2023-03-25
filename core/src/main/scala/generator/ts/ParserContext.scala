@@ -199,6 +199,19 @@ class ParserContext() {
   def getNamespaceClass(name: String): Option[ScalaClass] =
     scalaClasses.get(name)
 
+  def getImportForClassName(name:String):Option[String]={
+    name match {
+      case "RequestBase" => Some(s"import zio.elasticsearch.common.$name")
+      case _ =>
+        val withCommon = s"common.$name"
+        if (scalaClasses.contains(withCommon)) {
+          val ns = scalaClasses(withCommon).namespace
+          Some(s"import $ns.$name")
+        } else None
+    }
+
+  }
+
   def getRecursiveMembers(typ:ScalaType):List[ScalaClassMember]={
     getClass(typ.toScalaType) match {
       case Some(value) => value.members ++ value.implements.flatMap(getRecursiveMembers)
@@ -221,7 +234,7 @@ class ParserContext() {
     })
   }
 
-  lazy val MAP_DEFAULTS=Map(
+  lazy val MAP_DEFAULTS = Map(
     ("", "acknowledged") -> "true"
   )
 
@@ -236,5 +249,21 @@ class ParserContext() {
         case s:String if s.startsWith("List[")=> "Nil"
       }
     }
+  }
+
+  lazy val MAP_VARIABLES = Map(
+    ("Map[String,Pipeline]") -> "pipelines"
+  )
+
+  def getVariableName(name:String):String={
+    MAP_VARIABLES.getOrElse(name, name)
+  }
+
+  lazy val REQUEST_TYPED_BODY = Map(
+    ("PutPipelineRequest" -> ("Pipeline" -> "a Pipeline"))
+  )
+
+  def getTypedBody(scalaRequest:String):Option[(String,String)]={
+    REQUEST_TYPED_BODY.get(scalaRequest)
   }
 }
