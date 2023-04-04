@@ -7,6 +7,10 @@ import org.scalablytyped.converter.internal.ts.TsExportee.Star
 import org.scalablytyped.converter.internal.ts.TsExportee.Tree
 import scala.collection.mutable
 class ParserContext() {
+  import Converters._
+
+
+
   val scalaClasses = new mutable.HashMap[String, ScalaClass]
   val MAP_CLASSES: Map[String, String] = Map("string" -> "String", "Dictionary" -> "Map")
 
@@ -26,10 +30,10 @@ class ParserContext() {
       case TsGlobal(comments, declared, members, codePath)                          =>
       case t: TsDeclClass =>
         val c = parse(namespace, t)
-        scalaClasses += s"$namespace.${c.name}" -> c
+        scalaClasses += c.id -> c
       case t: TsDeclInterface =>
         val c = parse(namespace, t)
-        scalaClasses += s"$namespace.${c.name}" -> c
+        scalaClasses += c.id -> c
       case t: TsDeclEnum => parse(t)
       case TsDeclVar(comments, declared, readOnly, name, tpe, expr, jsLocation, codePath) =>
       case TsDeclFunction(comments, declared, name, signature, jsLocation, codePath)      =>
@@ -51,9 +55,10 @@ class ParserContext() {
     var name       = ts.name.value
     if (name == "Request") name = inFile.path.last.replace(".ts", "")
     if (name == "Response") name = inFile.path.last.replace(".ts", "")
+    val realNamespace = fixNamespace(namespace)
 
     ScalaClass(
-      namespace = namespace,
+      namespace = realNamespace,
       name = name,
       typeParams = ts.tparams.toList.map(parse),
       comments = ts.comments,
@@ -64,6 +69,32 @@ class ParserContext() {
     )
   }
 
+  def fixNamespace(namespace:String):String={
+    var realNamespace = namespace
+    if (realNamespace.startsWith("_global")) {
+      realNamespace = realNamespace.replace("_global", "common")
+    } else if (realNamespace.startsWith("_types")) {
+      realNamespace = realNamespace.replace("_types", "common")
+    } else {
+      var tokens = realNamespace.split('.')
+      List("_types", "common").foreach {
+        sep =>
+          if (tokens.contains(sep)) tokens = tokens.takeWhile(_ != sep)
+      }
+      realNamespace = tokens.mkString(".")
+    }
+    if (realNamespace.isEmpty) realNamespace = "global"
+
+//    if(realNamespace.startsWith("common.")){
+//      val tokens = realNamespace.split('.')
+//      if(tokens.length>1){
+//        val newTokens=List("global")++tokens.tail
+//        realNamespace = newTokens.mkString(".")
+//      }
+//    }
+
+    realNamespace
+  }
   def parse(namespace: String, ts: TsDeclClass)(implicit inFile: InFile): ScalaClass = {
     // comments,
     // declared,
@@ -75,13 +106,20 @@ class ParserContext() {
     // members,
     // jsLocation,
     // codePath,
+
     val allMembers = ts.members.toList.map(parse)
     var name       = ts.name.value
-    if (name == "Request") name = inFile.path.last.replace(".ts", "")
-    if (name == "Response") name = inFile.path.last.replace(".ts", "")
+    name match {
+      case "Request" =>
+        name = inFile.path.last.replace(".ts", "")
+      case "Response" =>
+        name = inFile.path.last.replace(".ts", "")
+      case _ =>
+    }
+    val realNamespace=fixNamespace(namespace)
 
     ScalaClass(
-      namespace = namespace,
+      namespace = realNamespace,
       name = name,
       typeParams = ts.tparams.toList.map(parse),
       comments = ts.comments,
@@ -142,31 +180,45 @@ class ParserContext() {
       case TsTypeAsserts(ident, isOpt)              => ???
       case TsTypeIntersect(types)                   => ???
       case TsTypeFunction(signature)                => ???
-      case TsTypeTuple(elems)                       => ???
+      case TsTypeTuple(elems)                       =>
+        TupleType(elems.toList.map(parse))
       case TsTypeConditional(pred, ifTrue, ifFalse) => ???
       case t: TsTypeRef => parseTsTypeRef(t)
       case TsTypeQuery(expr) => ???
       case TsTypeUnion(types) =>
-        val res = types.toList.map(parse)
-        if (types.length == 2) {
-          if (res.contains(UndefinedType)) {
-            res.filterNot(_ == UndefinedType).map(_.setRequired(true).setNullable(true)).head
-          } else UnionType(res)
+        var res = types.toList.map(parse)
+        var refreshRequired=false
+        if(res.contains(UndefinedType)) {
+
+          res=res.filterNot(_ == UndefinedType)//.map(_.setRequired(true).setNullable(true))
+          refreshRequired=true
+        }
+        val toScala=res.map(_.toScalaType).sortBy(_.length)
+        if(toScala.contains(s"Chunk[${toScala.head}]")){
+          res=res.filter(_.toScalaType.startsWith("Chunk["))
+        }
+//        if(toScala.contains("String") && toScala.contains("Boolean"))
+
+        if(refreshRequired) res=res.map(_.setRequired(false).setNullable(true))
+        if (res.length == 1) {
+          res.head
         } else UnionType(res)
 
       case TsTypeInfer(tparam)                      => ???
       case TsTypeIs(ident, tpe)                     => ???
       case TsTypeConstructor(isAbstract, signature) => ???
       case TsTypeThis()                             => ???
-      case TsTypeLiteral(literal)                   => ???
+      case TsTypeLiteral(literal)                   => LiteralType(literal.asString)
       case TsTypeLookup(from, key)                  => ???
     }
 
   def parse(tpe: TsTypeParam): String = tpe.name.value // TODO add type bounds
 
+  def parse(item:TsTupleElement):ScalaType=SimpleType(MAP_CLASSES.getOrElse(item.tpe.asString, item.tpe.asString))
+
   def parseTsTypeRef(typeRef: TsTypeRef): ScalaType = {
     val res = typeRef.name.parts.map(p => MAP_CLASSES.getOrElse(p.value, p.value)).mkString(".")
-    if (res == "undefined") {
+    if (res == "undefined" || res=="null") {
       UndefinedType
     } else
       SimpleType(res, typeRef.tparams.toList.map(parse))
@@ -199,6 +251,14 @@ class ParserContext() {
   def getNamespaceClass(name: String): Option[ScalaClass] =
     scalaClasses.get(name)
 
+  def getNamespaceResponseClass(name: String):Option[ScalaClass] = scalaClasses.find{
+    case (nameCls, _) => nameCls.startsWith(name) && nameCls.endsWith("Response")
+  }.map(_._2)
+
+
+  def getNamespaceRequestClass(name: String): Option[ScalaClass] = scalaClasses.find {
+    case (nameCls, _) => nameCls.startsWith(name) && nameCls.endsWith("Request")
+  }.map(_._2)
   def getImportForClassName(name: String): Option[String] =
     name match {
       case "RequestBase" => Some(s"import zio.elasticsearch.common.$name")
@@ -260,8 +320,11 @@ class ParserContext() {
     "Map[String,Pipeline]" -> "pipelines",
   )
 
-  def getVariableName(name: String): String =
-    MAP_VARIABLES.getOrElse(name, name)
+  def getVariableName(name: String): String = {
+    val result=MAP_VARIABLES.getOrElse(name, name)
+    result.toCamel
+  }
+
 
   lazy val REQUEST_TYPED_BODY = Map(
     "PutPipelineRequest" -> ("Pipeline" -> "a Pipeline"),

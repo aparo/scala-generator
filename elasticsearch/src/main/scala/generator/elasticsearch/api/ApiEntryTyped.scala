@@ -8,6 +8,8 @@ import generator.elasticsearch.Constants
 import generator.ts.{CodeData, ParserContext, ScalaClassMember, ScalaObjectType, SimpleType, UndefinedType, UnionType}
 import generator.ts.Converters._
 
+import scala.util.Try
+
 case class ApiEntryTyped(
     name:                 String = "undefined",
     documentation:        APIDocumetation,
@@ -38,9 +40,9 @@ case class ApiEntryTyped(
 
   def methods: List[String] = url.paths.flatMap(_.methods)
 
-  def requestPackage: String = s"$basePackage.requests".stripSuffix(".")
+  def requestPackage: String = name //s"$basePackage.requests".stripSuffix(".")
 
-  def responsePackage: String = s"$basePackage.responses".stripSuffix(".")
+  def responsePackage: String = name //s"$basePackage.responses".stripSuffix(".")
 
   def clientName: String = if (scope == "client") "this" else "client"
 
@@ -52,6 +54,7 @@ case class ApiEntryTyped(
     this.extra.foreach { case (k, v) =>
       imports += s"import ${Constants.namespaceName}.$k"
     }
+    imports += s"import ${Constants.namespaceName}.common._"
 
     // generating class documentation
     doc ++= cookedDocumentation(true, this.parameters)
@@ -63,8 +66,7 @@ case class ApiEntryTyped(
 
     doc += this.parameters
       .map { parameter =>
-        val key = ""
-        newLineFunc + s"$key${parameter.getDefParameterNoVar}"
+        newLineFunc + s"${parameter.getDefParameterNoVar}"
       }
       .mkString(",\n") + s") extends ActionRequest[$requestBody] "
     if (implements.nonEmpty) {
@@ -95,7 +97,7 @@ case class ApiEntryTyped(
 
     doc += "}\n"
     doc += "\n"
-    val filename = s"$requestPackage/$scalaRequest.scala".substring(Constants.namespaceName.length + 1)
+    val filename = s"$requestPackage/$scalaRequest.scala" //.substring(Constants.namespaceName.length + 1)
     CodeData(code = doc.toList, imports = imports.toList, filename = filename, isPackage = false)
   }
 
@@ -104,12 +106,14 @@ case class ApiEntryTyped(
 
     val text = new ListBuffer[String]
     // generating class documentation
-    imports += s"import $basePackage._\n"
-    imports += s"import zio.json._\n"
-    imports += s"import zio.json.ast._\n"
+    imports += s"import $basePackage._"
+    imports += s"import zio.json._"
+    imports += s"import zio.json.ast._"
+    imports += s"import ${Constants.namespaceName}.common._"
+
     //    text += s"import com.github.plokhotnyuk.jsoniter_scala.core._\n"
     //    text += s"import com.github.plokhotnyuk.jsoniter_scala.macros._\n"
-    imports ++= extra.map(v => s"import ${Constants.namespaceName}.${v._1}\n")
+    imports ++= extra.map(v => s"import ${Constants.namespaceName}.${v._1}")
 
     var implements: List[String] = List.empty[String]
 
@@ -117,7 +121,7 @@ case class ApiEntryTyped(
 
     // we add other request parameters taken from typed parsed data
     // retrieve typed data
-    parserContext.getNamespaceClass(s"${scope}.responses.${scalaResponse}").foreach { rqTyped =>
+    parserContext.getNamespaceResponseClass(name).foreach { rqTyped =>
       implements =
         if (rqTyped.implements.isEmpty) Nil
         else {
@@ -143,14 +147,14 @@ case class ApiEntryTyped(
 
     val parameters: List[(String, CallParameter)] =
       para2.toList.filter(_._2.required) ++ para2.filterNot(_._2.required).sortBy(_._2.name.dropWhile(_ == '_'))
-    var filename  = s"$responsePackage/$scalaResponse.scala".substring(Constants.namespaceName.length + 1)
+    var filename  = s"$responsePackage/$scalaResponse.scala"//.substring(Constants.namespaceName.length + 1)
     var isPackage = false
     if (parameters.length == 1 && parameters.head._1 == "Map") {
       // case simple type
       val code = parameters.head._2.toQueryParam
       text += s"type ${scalaResponse}=$code\n"
       // this must go in a package
-      filename = s"$responsePackage/package.scala".substring(Constants.namespaceName.length + 1)
+      filename = s"$responsePackage/package.scala"//.substring(Constants.namespaceName.length + 1)
       isPackage = true
     } else {
       // case object that need to manage the data
@@ -163,7 +167,8 @@ case class ApiEntryTyped(
       text += parameters
         .map { case (className, parameter) =>
           val key = ""
-          newLineFunc + s"$key${parameter.getParameterWithDefault(className)}"
+          val value=Try(s"$key${parameter.getParameterWithDefault(className)}").toOption.getOrElse(s"$key${parameter.getParameterNoDefault(className)}")
+          newLineFunc + value
         }
         .toList
         .mkString(",\n")
@@ -183,7 +188,6 @@ case class ApiEntryTyped(
       text += "}\n"
 
       text += s"object $scalaResponse{\n"
-      //    text += s"implicit val jsonCodec: JsonValueCodec[$scalaResponse] = JsonCodecMaker.make[$scalaResponse](CodecMakerConfig.withFieldNameMapper(JsonCodecMaker.enforceCamelCase))"
       text += s"   implicit val jsonCodec: JsonCodec[$scalaResponse] = DeriveJsonCodec.gen[$scalaResponse]"
       text += "}\n"
     }
@@ -201,7 +205,7 @@ case class ApiEntryTyped(
       text += "    val queryArgs = new mutable.HashMap[String, String]()\n"
       parameters.foreach { parameter =>
         val code = parameter.toBodyCode
-        if (!code.isEmpty)
+        if (code.nonEmpty)
           text += code
       }
       text += "    // Custom Code On\n"
@@ -302,7 +306,7 @@ case class ApiEntryTyped(
     text += s"$funcName(request)\n"
     text += "\n  }\n\n"
 
-    text += s"  def $funcName(request:${scalaRequest}):$getRequestZioReturn= $clientName.execute(request)\n\n"
+    text += s"  def $funcName(request:${scalaRequest}):$getRequestZioReturn= $clientName.execute[$requestBody,$scalaResponse](request)\n\n"
 
     text.mkString
   }
@@ -321,9 +325,7 @@ case class ApiEntryTyped(
     text += this.parameters
       .map { parameter =>
         newLineFunc + s"${parameter.getDefParameterNoVar}"
-
       }
-      .toList
       .mkString(",\n")
     text += "): " + getRequestZioReturn
     text += " ={\n"
@@ -390,16 +392,19 @@ object ApiEntryTyped {
     val implicits   = new ListBuffer[String]
     val parameters  = new ListBuffer[CallParameter]
     var requestBody = "Json"
-    var className: String = apiEntry.className
+    val className: String = apiEntry.className
 
-    var scalaRequest:    String         = apiEntry.scalaRequest
-    var scalaResponse:   String         = apiEntry.scalaResponse
+    val scalaRequest:    String         = apiEntry.scalaRequest
+    val scalaResponse:   String         = apiEntry.scalaResponse
     var extraClassCodes: List[CodeData] = List.empty[CodeData]
-    var result = apiEntry.result
-    var scope  = apiEntry.scope
-    var basePackage: String       = s"${Constants.namespaceName}.${scope.replace("client", "")}".stripSuffix(".")
+    val result = apiEntry.result
+    val scope  = apiEntry.scope
+    val basePackage: String       = s"${Constants.namespaceName}.${scope.replace("client", "")}".stripSuffix(".")
     var implements:  List[String] = List.empty[String]
     var hasBody=false
+
+    // fix names
+
 
     apiEntry.url.params.foreach { p =>
       extra ++= p._2.getEnum(p._1)
@@ -410,7 +415,7 @@ object ApiEntryTyped {
 
     var path: String = apiEntry.url.validPaths.map(_.path).head
     var requiredPaths = parts.findAllMatchIn(path).map(_.group(1)).toList
-    var partRequired  = new mutable.HashMap[String, Boolean]
+    val partRequired  = new mutable.HashMap[String, Boolean]
     requiredPaths.foreach { p =>
       partRequired += p -> true
     }
@@ -423,7 +428,7 @@ object ApiEntryTyped {
           }
           path = s
         }
-      case value =>
+      case _ =>
     }
     val requiredPathsCount = requiredPaths.count(p => partRequired(p))
     val bodyType = apiEntry.body match {
@@ -523,11 +528,11 @@ object ApiEntryTyped {
 
     // we add other request parameters taken from typed parsed data
     // retrieve typed data
-    parserContext.getNamespaceClass(s"${scope}.requests.${scalaRequest}").foreach { rqTyped =>
+    parserContext.getNamespaceRequestClass(apiEntry.name).foreach { rqTyped =>
       rqTyped.members.foreach {
         case sc if sc.name == "path_parts" =>
           sc.typ.getOrElse(UndefinedType) match {
-            case UndefinedType   => ()
+            case UndefinedType => ()
             case UnionType(_, _) => ()
             case st: SimpleType =>
               if (!para2.exists(_.name == st.name))
@@ -548,7 +553,7 @@ object ApiEntryTyped {
           }
         case sc if sc.name == "query_parameters" =>
           sc.typ.getOrElse(UndefinedType) match {
-            case UndefinedType   => ()
+            case UndefinedType => ()
             case UnionType(_, _) => ()
             case st: SimpleType =>
               if (!para2.exists(_.name == st.name))
@@ -570,11 +575,11 @@ object ApiEntryTyped {
         case sc if sc.name == "body" =>
           parserContext.getTypedBody(scalaRequest) match {
             case Some(tuple) =>
-              val cls=tuple._1
-              val desc=tuple._2
+              val cls = tuple._1
+              val desc = tuple._2
               // we update body
               requestBody = cls
-              hasBody=true
+              hasBody = true
               para2.find(_.name == "body") match {
                 case Some(value) =>
                   para2 -= value
@@ -592,33 +597,44 @@ object ApiEntryTyped {
             case None =>
               // we create a request body
               val rqBody = scalaRequest + "Body"
-              sc.typ.foreach { scalatype =>
-                scalatype match {
-                  case st: ScalaObjectType =>
-                    val cd = st
-                      .copy(name = rqBody, namespace = apiEntry.requestPackage.replace("zio.elasticsearch.", ""))
-                      .toCode
-                    if (cd != CodeData.empty) {
-                      extraClassCodes ::= cd.copy(imports = List(s"import $basePackage._") ::: cd.imports)
-                      requestBody = rqBody
-                      para2.find(_.name == "body") match {
-                        case Some(value) =>
-                          para2 -= value
-                          para2 += value.copy(`type` = rqBody)
-                        case None =>
-                          para2 += CallParameter(
-                            "body",
-                            rqBody,
-                            s"a $rqBody",
-                            required = apiEntry.body.get.required,
-                            scope = "body",
-                          )
-                      }
-
+              sc.typ.foreach {
+                case st: ScalaObjectType =>
+                  val cd = st
+                    .copy(name = rqBody, namespace = apiEntry.requestPackage.replace("zio.elasticsearch.", ""))
+                    .toCode
+                  if (cd != CodeData.empty) {
+                    extraClassCodes ::= cd.copy(imports = List(s"import $basePackage._") ::: cd.imports)
+                    requestBody = rqBody
+                    para2.find(_.name == "body") match {
+                      case Some(value) =>
+                        para2 -= value
+                        para2 += value.copy(`type` = rqBody)
+                      case None =>
+                        para2 += CallParameter(
+                          "body",
+                          rqBody,
+                          s"a $rqBody",
+                          required = apiEntry.body.get.required,
+                          scope = "body",
+                        )
                     }
 
-                }
-
+                  }
+                case st: SimpleType =>
+                  requestBody = rqBody
+                  para2.find(_.name == "body") match {
+                    case Some(value) =>
+                      para2 -= value
+                      para2 += value.copy(`type` = st.name)
+                    case None =>
+                      para2 += CallParameter(
+                        "body",
+                        st.name,
+                        s"a $rqBody",
+                        required = apiEntry.body.get.required,
+                        scope = "body",
+                      )
+                  }
               }
           }
       }
@@ -629,7 +645,11 @@ object ApiEntryTyped {
         }
       // called all derived typed parameters
       val recursiveFields = rqTyped.implements.flatMap(impl => parserContext.getRecursiveMembers(impl))
-      para2 ++= recursiveFields.map(p => toCallParameter(p))
+    recursiveFields.foreach{p =>
+      if (!para2.exists(_.name == p.name))
+        para2 += toCallParameter(p)
+
+    }
     }
 
     ApiEntryTyped(

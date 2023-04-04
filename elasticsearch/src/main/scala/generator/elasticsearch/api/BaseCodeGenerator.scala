@@ -16,8 +16,8 @@ trait BaseCodeGenerator {
 
   def devConfig: DevConfig
 
-  // DONE autoscaling
-  lazy val todoModule = "ingest"
+  // DONE autoscaling ingest
+  lazy val todoModule = "async_search"
 
   lazy val root = devConfig.devRestAPIPath / "api"
 
@@ -29,7 +29,7 @@ trait BaseCodeGenerator {
     .walk(root)
     .filter(os.isFile(_, followLinks = false))
     .filter(_.last.endsWith(".json"))
-    .filter(f => f.last.startsWith(todoModule))
+//    .filter(f => f.last.startsWith(todoModule))
     .toList
 
   lazy val tsFiles = os
@@ -39,11 +39,11 @@ trait BaseCodeGenerator {
 //    .filterNot(_.toString.contains("_types")) // we skip for now
     .filterNot(_.toString.contains("mapping")) // we skip for now
     .filterNot(_.toString.contains("aggregations/pipeline.ts")) // we skip for now
-    .filter(f =>
-      f.toString.contains(todoModule) ||
-        f.toString.contains("Base.ts") || // requests
-        f.toString.contains("behaviors.ts"),
-    )
+//    .filter(f =>
+//      f.toString.contains(todoModule) ||
+//        f.toString.contains("Base.ts") || // requests
+//        f.toString.contains("behaviors.ts"),
+//    )
     .toList
 
   lazy val mappingFiles =
@@ -51,7 +51,13 @@ trait BaseCodeGenerator {
 
   def run(): ZIO[Any, Throwable, Unit]
 
-  lazy val FIX_API_NAMES = Map("ingest.simulate" -> "ingest.simulate_pipeline")
+  lazy val FIX_API_NAMES:Map[String,String] = Map(
+//    "ingest.simulate" -> "ingest.simulate_pipeline"
+  )
+
+  def fixAPIName(str:String):String=if(str.contains(".")){
+    str
+  } else s"common.$str"
 
   protected def processFile(
       name:                 os.Path,
@@ -62,7 +68,7 @@ trait BaseCodeGenerator {
         _ <- ZIO.debug(s"Processing $name")
         obj <- ZIO.attempt {
           readFromStream[Map[String, APIEntry]](name.getInputStream).map { v =>
-            ApiEntryTyped.parse(v._2.copy(name = FIX_API_NAMES.getOrElse(v._1, v._1)))
+            ApiEntryTyped.parse(v._2.copy(name = fixAPIName(v._1)))
           }
         }
       } yield obj.toSeq

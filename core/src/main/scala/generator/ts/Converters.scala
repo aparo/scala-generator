@@ -21,6 +21,7 @@ object Converters {
     "Field" -> "String",
     "string" -> "String",
     "long" -> "Long",
+    "float" -> "Float",
     "Fields" -> "Chunk[String]",
     "boolean" -> "Boolean",
     "integer" -> "Int",
@@ -40,6 +41,37 @@ object Converters {
     "IndexPatterns" -> "Chunk[String]",
     "VersionString" -> "String",
     "VersionNumber" -> "Int",
+    "EpochTime[UnitMillis]" -> "Long",
+    "SequenceNumber" -> "Int",
+    "DurationValue[UnitMillis]" -> "Long",
+    "NodeId" -> "String",
+    "TaskId" -> "String",
+    "Ip" -> "String",
+    "Duration" -> "String",
+    "ByteSize" -> "String",
+    "Bytes" -> "String",
+    "Str()" -> "String",
+    "String|null|None" -> "Option[String]",
+    "Boolean|String|None" -> "Option[Json]",
+    "Double|null|None" -> "Option[Double]",
+    "Double|null" -> "Option[Double]",
+    "Int|null" -> "Option[Int]",
+    "String|null|None" -> "Option[String]",
+    "String|null" -> "Option[String]",
+    "Long|null|None" -> "Option[Long]",
+    "Long|null" -> "Option[Long]",
+    "DateMath|null|None" -> "Option[DateMath]",
+    "DateMath|null" -> "Option[DateMath]",
+    "Expand_wildcards" -> "ExpandWildcards",
+    "Chunk[Double]|null|None" -> "Chunk[Double]",
+    "Indices" -> "Chunk[String]",
+
+
+    "Default_operator" -> "DefaultOperator",
+    "Uuid" -> "String",
+
+    // with doubt
+    "Stringified[Int]" -> "Int"
   )
 
   implicit class ClassConverter(scalaClass: ScalaClass) {
@@ -68,22 +100,24 @@ object Converters {
         val name           = REMAP_CLASSES.getOrElse(tupleNs, scalaClass.name)
         var filename       = s"${scalaClass.namespace}/$name.scala"
         var addJsonEncoder = false
-        if (scalaClass.isAbstract || ABSTRACT_CLASSES.contains(tupleNs)) {
+        if (scalaClass.isTrait || ABSTRACT_CLASSES.contains(tupleNs)) {
           val sealedV = if (isSealed) "sealed " else ""
-          code += s"${sealedV}trait $name {"
+          code += s"${sealedV}trait $name {\n"
           scalaClass.members.foreach { member =>
             val cd = member.toDef
             code ++= cd.code
+            code += "\n"
             imports ++= cd.imports
           }
-          code += s"}"
-          addJsonEncoder = true
+          code += s"}\n"
+          if(isSealed)
+            addJsonEncoder = true
         } else {
           if (isParentSealed) {
             val hint = getDiscriminator
             code += s"""@jsonHint("$hint")"""
           }
-          code += s"final case class $name ("
+          code += s"final case class $name (\n  "
           val members = new ListBuffer[String]
           scalaClass.members.foreach { member =>
             val cd = member.toParam
@@ -106,16 +140,16 @@ object Converters {
                 println(s"Missing class $parent")
             }
           }
-          code += members.mkString(", ")
-          code += s")"
+          code += members.mkString(",\n  ")
+          code += s")\n"
           addJsonEncoder = true
         }
         if (addJsonEncoder) {
           code ++= List(
-            "",
-            s"object $name {",
-            s"  implicit val jsonCodec:JsonCodec[$name]= DeriveJsonCodec.gen[$name]",
-            "}",
+            "\n",
+            s"object $name {\n",
+            s"  implicit val jsonCodec:JsonCodec[$name]= DeriveJsonCodec.gen[$name]\n",
+            "}\n",
           )
         }
 
@@ -147,24 +181,22 @@ object Converters {
         imports += "import zio.json._"
         val name     = REMAP_CLASSES.getOrElse(tupleNs, scalaClass.name)
         var filename = s"${scalaClass.namespace}/$name.scala"
-        code += s"final case class $name ("
+        code += s"\nfinal case class $name (\n"
         val members = new ListBuffer[String]
-        scalaClass.members.foreach { member =>
-          member match {
-            case m: ScalaClassMember =>
-              val cd = m.toParam
-              imports ++= cd.imports
-              members ++= cd.code
-            case _ =>
-          }
+        scalaClass.members.foreach {
+          case m: ScalaClassMember =>
+            val cd = m.toParam
+            imports ++= cd.imports
+            members ++= cd.code
+          case _ =>
         }
-        code += members.mkString(", ")
-        code += s")"
+        code += members.mkString(",\n  ")
+        code += s"\n)\n"
         code ++= List(
-          "",
-          s"object $name {",
-          s"  implicit val jsonCodec:JsonCodec[$name]= DeriveJsonCodec.gen[$name]",
-          "}",
+          "\n",
+          s"object $name {\n",
+          s"  implicit val jsonCodec:JsonCodec[$name]= DeriveJsonCodec.gen[$name]\n",
+          "}\n",
         )
 
         CodeData(code = code.toList, imports = imports.toList, filename = filename)
@@ -174,18 +206,22 @@ object Converters {
 
   implicit class MethodConverter(member: ScalaClassMember) {
     def getType: String =
-      member.typ.map(_.toScalaType).getOrElse("Json")
+      member.typ.map(_.toScalaType).getOrElse("Json").typeToScala
     def toDef(implicit parserContext: ParserContext): CodeData =
       CodeData.empty.copy(code = List(s"  def ${member.name.fixName.toCamel}: ${getType}"))
 
     def toParam(implicit parserContext: ParserContext): CodeData = {
       val str          = member.name.fixName
-      val name         = str.toCamel
-      val defaultValue = if (member.isOptional) " = None" else ""
+      val name         = fixReserved(str.toCamel)
+      val typ=getType
+      val defaultValue = if (member.isOptional) {
+        if(typ=="String") "" else " = None"
+      } else if(typ.startsWith("Option[")) " = None"
+      else ""
       if (str == name) {
-        CodeData.empty.copy(code = List(s"""$name: $getType$defaultValue"""))
+        CodeData.empty.copy(code = List(s"""$name: $typ$defaultValue"""))
       } else
-        CodeData.empty.copy(code = List(s"""@jsonField("$str") $name: $getType$defaultValue"""))
+        CodeData.empty.copy(code = List(s"""@jsonField("$str") $name: $typ$defaultValue"""))
     }
   }
 
@@ -213,11 +249,21 @@ object Converters {
       } else string
       if (cleanValue == "if") { "`if`" }
       else if (cleanValue == "override") { "`override`" }
+      else if (cleanValue == "match") { "`match`" }
+      else if (cleanValue == "index-graveyard") { "indexGraveyard" }
+      else if (cleanValue == "x-pack") { "xpack" }
       else cleanValue
     }
 
     def typeToScala: String =
       TYPE_MAPPING.getOrElse(string, string)
 
+  }
+
+  lazy val RESERVED=Set("type")
+
+  def fixReserved(str: String):String={
+    if(str.contains(".")) s"`$str`"
+    else if(RESERVED.contains(str)) s"`$str`" else str
   }
 }

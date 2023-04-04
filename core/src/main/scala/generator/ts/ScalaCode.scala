@@ -42,6 +42,35 @@ case object UndefinedType extends ScalaType {
   override def setNullable(nullable: Boolean): ScalaType = UndefinedType
 }
 
+case class LiteralType(literal:String, isNullable: Boolean = false) extends ScalaType {
+  override def isRequired: Boolean = true
+
+  override def setRequired(required: Boolean): ScalaType = this
+
+  override def setNullable(nullable: Boolean): ScalaType = this.copy(isNullable = nullable)
+
+  override def toScalaType: String = literal
+
+}
+
+case class TupleType(items:List[ScalaType], isNullable: Boolean = false) extends ScalaType {
+  override def isRequired: Boolean = true
+
+  override def setRequired(required: Boolean): ScalaType = this
+
+  override def setNullable(nullable: Boolean): ScalaType = this.copy(isNullable = nullable)
+
+  override def toScalaType: String = {
+    val union = items.map(_.toScalaType).mkString(",")
+    if (isNullable) {
+      s"Option[($union)]"
+    } else "("+union+")"
+  }
+
+
+}
+
+
 case class UnionType(types: List[ScalaType], isNullable: Boolean = false) extends ScalaType {
   override def isRequired: Boolean = types.exists(_.isRequired)
 
@@ -74,10 +103,12 @@ case class SimpleType(
       if (tparams.isEmpty)
         n
       else {
-        s"$n[${tparams.map(_.toScalaType).mkString(",")}]"
+        val fullType=s"$n[${tparams.map(_.toScalaType).mkString(",")}]"
+        Converters.TYPE_MAPPING.getOrElse(fullType,fullType)
       }
     if (isNullable) {
-      s"Option[$value]"
+      val optValue=s"Option[$value]"
+      Converters.TYPE_MAPPING.getOrElse(optValue,optValue)
     } else value
   }
 }
@@ -95,6 +126,7 @@ case class ScalaObjectType(
   override def setNullable(nullable: Boolean): ScalaType = copy(isNullable = nullable)
 
   override def toScalaType: String = "Klass"
+  def id:String=s"$namespace.$name"
 
 }
 
@@ -129,7 +161,11 @@ case class ScalaClass(
     methods:    List[ScalaClassMethod] = Nil,
     jsLocation: Option[JsLocation] = None,
     codePath:   CodePath,
-) extends ScalaCode {}
+) extends ScalaCode {
+  def id:String=s"$namespace.$name"
+
+  def isTrait:Boolean=isAbstract || members.isEmpty
+}
 case class ScalaEnumMember(name: String, expr: Option[TsExpr] = None, comments: Comments) extends ScalaCode {
   override def members: List[ScalaClassMember] = Nil
 }

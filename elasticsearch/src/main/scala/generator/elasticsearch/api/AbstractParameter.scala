@@ -60,6 +60,9 @@ sealed trait AbstractParameter {
     case s: String if s.startsWith("Chunk[")     => `type`
     case "Pipeline" => "Pipeline"
     case ""         => "String"
+    case s: String if s.contains("_") => s.toCamelUpper
+    case s: String if s.charAt(0).isLower => s.capitalize
+    case _ => `type`
   }
 
   def requiredToString: String = `type` match {
@@ -112,7 +115,7 @@ sealed trait AbstractParameter {
         code += "Seq[String] = Nil"
       }
     } else if (this.`type` == "enum") {
-      val enumT = getParameterName(name.capitalize)
+      val enumT = getParameterName(name).capitalize
       if (isEnumMultiple(enumT)) {
         if (defaultIsValid) {
 //          val d = default.get match {
@@ -190,7 +193,7 @@ sealed trait AbstractParameter {
                    |    }
           """.stripMargin
       } else if (defaultIsValid) {
-        code += s"""    if(${enumT}!=${enumClass}.${default.get})
+        code += s"""    if(${enumT}!=${enumClass}.${default.get.toString.replace("\"", "")})
                    |        queryArgs += ("$name" -> ${enumT}.toString)
                    |""".stripMargin('|')
       } else {
@@ -242,6 +245,8 @@ case class CallParameter(
     scope:       String = "query",
     subtype:     Option[String] = None,
 ) extends AbstractParameter {
+
+
   def getCookedDocumentation(implicit parserContext: ParserContext): String = s" * @param $parameterName $description"
 
   def getDefParameter(implicit parserContext: ParserContext) = s"var $parameterName : $toQueryParam"
@@ -257,7 +262,9 @@ case class CallParameter(
   def getParameterWithDefault(clsName: String)(implicit parserContext: ParserContext): String =
     if (required) {
       s"$parameterName: $toQueryParam = ${getDefault(clsName)}"
-    } else s"$parameterName: $toQueryParam"
+    } else getParameterNoDefault(clsName)
+
+  def getParameterNoDefault(className: String)(implicit parserContext: ParserContext): String=s"$parameterName: $toQueryParam"
 
   def parameterName(implicit parserContext: ParserContext): String = this.getParameterName(this.name)
 

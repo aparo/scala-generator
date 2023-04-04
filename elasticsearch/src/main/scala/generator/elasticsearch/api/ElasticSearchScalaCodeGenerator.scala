@@ -11,6 +11,7 @@ import generator.ts.{CodeData, ParserContext}
 import os.Path
 import zio.ZIO
 
+import java.nio.file.{FileVisitOption, Files}
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCodeGenerator {
@@ -58,12 +59,12 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
       responses <- ZIO.foreach(apis)(apiEntry => ZIO.attempt(apiEntry.generateResponse))
       extraAPIClasses = apis.flatMap(_.extraClassCodes)
 
-//        zioAccessManagers <- generateApis(apis)
-//      _ <- generateManagers()
-////      _ <- ZIO.attempt(generateZioAccessors(zioAccessManagers))
-//      _ <- generateClientActions(destDir, apis)
-//      _ <- generateClientActionResolver(destDir, apis)
-//      _ <- generateEnumeration()
+        zioAccessManagers <- generateApis(apis)
+      _ <- generateManagers()
+//      _ <- ZIO.attempt(generateZioAccessors(zioAccessManagers))
+      _ <- generateClientActions(destDir, apis)
+      _ <- generateClientActionResolver(destDir, apis)
+      _ <- generateEnumeration()
 // generating classes
       typesCodes = parserContext.scalaClasses
         .filterNot(_._1.endsWith("Response"))
@@ -79,6 +80,9 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
             .replace("_types", "common"),
         )
       _ <- generateTsClasses(fileCodes)
+      _ <- ZIO.attemptBlocking(os.copy.into(os.pwd / "elasticsearch" / "templates" / "zio-elasticsearch"  ,
+        devConfig.devScalaAPIDestPath, replaceExisting = true, createFolders = true, mergeFolders = true))
+      _ <- ZIO.attemptBlocking(os.proc("python", "fix_zio_elasticsearch.py"))
     } yield ()
 
   def generateEnumeration(): ZIO[Any, Throwable, Unit] = for {
@@ -92,7 +96,7 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
   } yield ()
 
   def generateManagers(): ZIO[Any, Throwable, Unit] =
-    ZIO.foreachDiscard(managers) { case (name, code) =>
+    ZIO.foreachParDiscard(managers) { case (name, code) =>
       ZIO.attempt(
         PathUtils.saveScalaFile(
           elasticsearch.managers.txt
@@ -117,14 +121,14 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
     apis.foreach { apiEntry =>
 
       val client = apiEntry.scope
-      requestResponse += s"zio.elasticsearch.$client.requests.${apiEntry.scalaRequest}" -> s"zio.elasticsearch.$client.responses.${apiEntry.scalaResponse}"
+      requestResponse += s"zio.elasticsearch.${apiEntry.requestPackage}.${apiEntry.scalaRequest}" -> s"zio.elasticsearch.${apiEntry.responsePackage}.${apiEntry.scalaResponse}"
       val extra            = apiEntry.extra
       val implicitsList    = apiEntry.implicits
       val code             = apiEntry.getClientCalls
       val zioAccessMethods = apiEntry.getClientZIOAccessorsCalls
       val imports = List(
-        s"zio.elasticsearch.$client.requests.${apiEntry.scalaRequest}",
-        s"zio.elasticsearch.$client.responses.${apiEntry.scalaResponse}",
+        s"zio.elasticsearch.${apiEntry.requestPackage}.${apiEntry.scalaRequest}",
+        s"zio.elasticsearch.${apiEntry.responsePackage}.${apiEntry.scalaResponse}",
       )
       extras ++= extra
       if (managers.contains(client)) {
@@ -143,7 +147,7 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
 
   }
 
-  def generateClientActions(destDir: Path, apis: List[APIEntry])(implicit
+  def generateClientActions(destDir: Path, apis: List[ApiEntryTyped])(implicit
       parserContext:                 ParserContext,
   ): ZIO[Any, Throwable, Unit] = ZIO.attempt {
     val filename = destDir / "client" / "ClientActions.scala"
@@ -159,7 +163,7 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
     PathUtils.saveScalaFile(generated, filename)
   }
 
-  def generateClientActionResolver(destDir: Path, apis: List[APIEntry])(implicit
+  def generateClientActionResolver(destDir: Path, apis: List[ApiEntryTyped])(implicit
       parserContext:                        ParserContext,
   ): ZIO[Any, Throwable, Unit] = ZIO.attempt {
     val filename = destDir / "client" / "ClientActionResolver.scala"
@@ -202,12 +206,15 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
         case Left(value) =>
           ZIO.fail(new RuntimeException(value))
         case Right(value) =>
-          var namespace = f.segments.toList
-            .dropWhile(_ != "specification")
-            .drop(1)
-            .head
-          if (f.segments.toList.last.endsWith("Request.ts")) namespace = namespace + ".requests"
-          if (f.segments.toList.last.endsWith("Response.ts")) namespace = namespace + ".responses"
+//          var namespace = f.segments.toList
+//            .dropWhile(_ != "specification")
+//            .drop(1)
+//            .head
+//          if (f.segments.toList.last.endsWith("Request.ts")) namespace = namespace + ".requests"
+//          if (f.segments.toList.last.endsWith("Response.ts")) namespace = namespace + ".responses"
+                    val namespace = f.segments.toList
+                      .dropWhile(_ != "specification")
+                      .drop(1).dropRight(1).mkString(".")
 
           ZIO.attempt(parserContext.parse(InFile(f), namespace, value))
       }
@@ -226,20 +233,58 @@ class ElasticSearchScalaCodeGenerator(val devConfig: DevConfig) extends BaseCode
         }
       }
       os.makeDir.all(targetFileDir)
-      val text     = codes.flatMap(_.code).mkString("\n")
-      var includes = new ListBuffer[String]
-      includes ++= codes.flatMap(_.imports).toSet
-      if (text.contains(" ElasticSearch ")) includes += "import zio.elasticsearch._"
-      if (text.contains("Json")) includes += "import zio.json.ast._"
-      if (text.contains("Chunk[")) includes += "import zio._"
-      if (text.contains("OffsetDateTime") || text.contains("LocalDateTime")) includes += "import java.time._"
-      val finalIncludes = includes.toSet.toList.sorted.mkString("\n")
-//    os.write.over(targetFileDir / finalName, s"package $packg\n$finalIncludes\n$text")
+      val text     = fixCode(codes.flatMap(_.code).mkString)
+      val finalIncludes = extractIncludes(text, codes.flatMap(_.imports)).mkString("\n")
       PathUtils.saveScalaFile(
         s"package $packg\n$finalIncludes\n$text",
         targetFileDir / finalName,
       )
       ZIO.logInfo(s"Written ${targetFileDir / finalName}")
     }
+
+  def extractIncludes(text:String, startValues:List[String]):List[String]={
+    val includes = new mutable.HashSet[String]
+    if (text.contains(" ElasticSearch ")) includes += "import zio.elasticsearch._"
+    if (text.contains("Json")) includes += "import zio.json.ast._"
+    if (text.contains("Chunk[")) includes += "import zio._"
+    if (text.contains("JsonCodec")) includes += "import zio.json._"
+    if (text.contains("OffsetDateTime") || text.contains("LocalDateTime")) includes += "import java.time._"
+    if (text.contains("ShardStatistics")) includes += "import zio.elasticsearch.common._"
+    if (text.contains("NodeName")) includes += "import zio.elasticsearch.common._"
+    if (text.contains("DataStreamName")) includes += "import zio.elasticsearch.common._"
+    if (text.contains("TransportAddress")) includes += "import zio.elasticsearch.common._"
+
+    if (text.contains("Option[Refresh]")) includes += "import zio.elasticsearch.common._"
+
+    if (text.contains("Option[Metadata]")) includes += "import zio.elasticsearch.common._"
+    if (text.contains("Analyzer")) includes += "import zio.elasticsearch.common.analysis._"
+    if (text.contains("CharFilter")) includes += "import zio.elasticsearch.common.analysis._"
+    if (text.contains("TokenFilter")) includes += "import zio.elasticsearch.common.analysis._"
+    if (text.contains("Normalizer")) includes += "import zio.elasticsearch.common.analysis._"
+    if (text.contains("Tokenizer")) includes += "import zio.elasticsearch.common.analysis._"
+
+    if (text.contains("ActionRequest[")) includes += "import zio.elasticsearch.common._"
+    if (text.contains("mutable.")) includes += "import scala.collection.mutable"
+    if (text.contains("CatRequestBase")) includes += "import zio.elasticsearch.cat.CatRequestBase"
+
+    includes.toList.sorted
+  }
+
+  def fixCode(code:String):String={
+    var result=code
+      .replace("\"\"", "\"")
+      .replace("Boolean=\"true\"", "Boolean=true")
+      .replace("Boolean=\"false\"", "Boolean=false")
+      .replace("ccs_minimize_roundtrips!=\"true\"", "ccs_minimize_roundtrips!=true")
+      .replace("Level.\"indices\"", "Level.indices")
+      .replace("Suggest_mode.\"missing\"", "Suggest_mode.missing")
+
+
+
+      .replace("Default_operator", "DefaultOperator")
+      .replace("DefaultOperator.\"OR\"", "DefaultOperator.OR")
+
+        result
+  }
 
 }
